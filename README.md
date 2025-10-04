@@ -10,14 +10,22 @@ A comprehensive web application that helps students improve their IELTS Writing 
   - Coherence and Cohesion
   - Lexical Resource
   - Grammatical Range and Accuracy
-- **Detailed Feedback**: Specific error identification and actionable comments
-- **Progress Tracking**: Visual dashboard with score trends over time
+- **Detailed Feedback**:
+  - Specific error identification with quoted examples
+  - Strengths analysis highlighting sophisticated language use
+  - Balanced, actionable comments for each criterion
+- **Progress Tracking**:
+  - Visual dashboard with score trends over time
+  - Recent essays overview with quick access
+  - Score distribution charts (Y-axis starts at Band 4 for realistic scale)
 - **Vocabulary Enhancement**:
-  - Paraphrase suggestions for low-level vocabulary
-  - Topic-specific C1-C2 level vocabulary
+  - Paraphrase suggestions (10 low-level words → C1-C2 alternatives)
+  - Topic-specific C1-C2 level vocabulary (10 items)
+  - Vocabulary tracking: view status and quiz scores
 - **Interactive Learning**:
   - Spaced repetition flashcards
   - Multiple-choice and fill-in vocabulary quizzes
+  - Quiz results tracked with best scores displayed
 - **AI-Powered Insights**: Summary of your writing patterns and improvement recommendations
 
 ### For Administrators
@@ -79,13 +87,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 Run the migration files in your Supabase SQL Editor in order:
 
-1. `supabase/migrations/001_create_profiles_table.sql`
-2. `supabase/migrations/002_create_essays_table.sql`
-3. `supabase/migrations/003_create_vocabulary_table.sql`
-4. `supabase/migrations/004_create_flashcards_table.sql`
-5. `supabase/migrations/005_create_quiz_results_table.sql`
-6. `supabase/migrations/006_create_token_usage_table.sql`
-7. `supabase/migrations/007_create_indexes.sql`
+1. `supabase/migrations/001_create_profiles_table.sql` - User profiles with auto-creation trigger
+2. `supabase/migrations/002_create_essays_table.sql` - Essay submissions and scores
+3. `supabase/migrations/003_create_vocabulary_table.sql` - Vocabulary items
+4. `supabase/migrations/004_create_flashcards_table.sql` - Flashcard SRS data
+5. `supabase/migrations/005_create_quiz_results_table.sql` - Quiz performance tracking
+6. `supabase/migrations/006_create_token_usage_table.sql` - OpenAI API usage logging
+7. `supabase/migrations/007_create_indexes.sql` - Performance indexes
+8. `supabase/migrations/008_add_strengths_columns.sql` - Essay strengths tracking
+9. `supabase/migrations/009_add_vocabulary_tracking.sql` - Vocabulary view/quiz tracking
+10. `supabase/migrations/010_insert_missing_profiles.sql` - Fix missing profiles (run this if you get foreign key errors)
 
 **Important**: Copy and paste the contents of each file into the Supabase SQL Editor and execute them one by one.
 
@@ -95,17 +106,22 @@ Enable email confirmation and customize email templates for a professional exper
 
 1. **Enable Email Confirmation:**
    - Go to Supabase Dashboard → Authentication → Settings
-   - Enable "Email confirmations"
+   - Enable "Confirm email" under Email Auth Providers
 
 2. **Add Redirect URLs:**
    - Go to Authentication → URL Configuration
-   - Add these URLs:
-     - `http://localhost:3000/auth/callback` (development)
-     - `https://your-domain.com/auth/callback` (production)
+   - Add these URLs to "Site URL" and "Redirect URLs":
+     - `http://localhost:3000` (development)
+     - `http://localhost:3001` (development - alternative port)
+     - `http://localhost:3002` (development - alternative port)
+     - `http://localhost:3003` (development - alternative port)
+     - `https://your-domain.com` (production)
 
-3. **Customize Email Templates:**
-   - See detailed instructions in `docs/04_supabase_email_setup.md`
-   - Templates include branded emails for IELTS Assistant
+3. **Customize Email Templates (Recommended):**
+   - Go to Authentication → Email Templates
+   - Select "Confirm signup"
+   - Replace with the professional template from `supabase/templates/confirmation.html`
+   - Features: Branded design, gradient buttons, clear CTAs, mobile-responsive
 
 **Note**: For development, you can disable email confirmation, but **enable it for production**!
 
@@ -186,15 +202,21 @@ ielts-assistant/
 
 ### AI Essay Scoring
 
-The application uses OpenAI's GPT-4 with carefully crafted prompts that include:
-- Complete IELTS band descriptors (bands 5-9)
-- Structured output format (errors → comments → scores)
-- Integer scores for criteria, 0.5 rounding for overall
+The application uses OpenAI's GPT-4 with carefully crafted prompts that focus on:
+- **Realistic Assessment**: Authentic IELTS examiner perspective (Band 6-7 typical, Band 8-9 rare)
+- **Holistic Evaluation**: AI evaluates essays as a whole, not mechanically counting errors
+- **Complete Band Descriptors**: Bands 5-9 with detailed criteria for each level
+- **Detailed Feedback Format**:
+  - Strengths: Quoted examples of sophisticated language/structure
+  - Errors: Individual errors listed separately (never grouped with "such as")
+  - Comments: Balanced feedback acknowledging strengths first, then improvements
+  - Scores: Integer scores (5-9) for each criterion, overall score rounded to 0.5
 
 ### Vocabulary Generation
 
-- **Paraphrase**: Analyzes your essay to find ~7 low-level words and suggests C1-C2 alternatives
-- **Topic**: Generates ~10 high-level words/collocations specific to the essay prompt
+- **Paraphrase**: Analyzes your essay to find 10 low-level words and suggests C1-C2 alternatives
+- **Topic**: Generates 10 high-level words/collocations specific to the essay prompt
+- **Tracking**: View status (not viewed/viewed/quiz score) for each vocabulary set
 
 ### Spaced Repetition Flashcards
 
@@ -243,12 +265,14 @@ See `docs/02_design_system.md` for complete design guidelines.
 See `docs/03_project_structure.md` for detailed database schema.
 
 Key tables:
-- `profiles` - User profiles (extends Supabase auth.users)
-- `essays` - Essay submissions and scores
-- `vocabulary` - Generated vocabulary items
-- `flashcards` - Spaced repetition data
-- `quiz_results` - Quiz performance tracking
-- `token_usage` - OpenAI API usage logging
+- `profiles` - User profiles (extends Supabase auth.users) with auto-creation trigger
+- `essays` - Essay submissions, scores, errors, strengths, and comments
+- `vocabulary` - Generated vocabulary items (paraphrase and topic-specific)
+- `vocabulary_views` - Tracks when users view vocabulary sets
+- `vocabulary_quiz_attempts` - Tracks quiz scores and attempts
+- `flashcards` - Spaced repetition data with difficulty levels
+- `quiz_results` - Quiz performance tracking with scores
+- `token_usage` - OpenAI API usage logging for cost monitoring
 
 ## Development
 
@@ -289,14 +313,32 @@ Vercel is optimized for Next.js and provides:
 
 Make sure to set all variables from `.env.example` in your Vercel dashboard, using your production Supabase credentials.
 
+## Known Issues & Troubleshooting
+
+### "Foreign key constraint violation" when submitting essays
+**Problem**: User exists in auth.users but not in profiles table.
+**Solution**: Run migration `010_insert_missing_profiles.sql` to create missing profiles.
+
+### Email confirmation not working
+**Problem**: Emails not being sent or going to spam.
+**Solution**:
+1. Check Supabase Auth settings - ensure "Confirm email" is enabled
+2. Add redirect URLs in Supabase dashboard
+3. For production, use custom SMTP (Supabase free tier has email limits)
+
+### Progress bar stuck or not showing
+**Problem**: Progress indicator doesn't update during essay scoring.
+**Solution**: This is normal - scoring takes ~15 seconds for essays, ~10 seconds for vocabulary generation.
+
 ## Contributing
 
 This is a workshop project. Feel free to extend it with:
-- Writing Task 1 support
-- More quiz types
-- Advanced analytics
-- Export functionality (PDF reports)
-- Email notifications
+- Writing Task 1 support (graphs, charts, process diagrams)
+- More quiz types (matching, ordering, speaking practice)
+- Advanced analytics (word cloud, complexity metrics)
+- Export functionality (PDF reports, essay history)
+- Email notifications (weekly progress, achievement badges)
+- Collaborative features (peer review, teacher feedback)
 
 ## License
 
