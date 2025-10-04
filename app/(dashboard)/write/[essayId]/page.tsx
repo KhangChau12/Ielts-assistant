@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { AlertCircle, CheckCircle2, FileText, BookOpen, ArrowRight, Sparkles } from 'lucide-react'
+import { EssayImprovement } from './components/EssayImprovement'
 
 interface CriterionData {
   name: string
@@ -246,6 +247,17 @@ export default async function EssayResultsPage({
             <CriterionCard key={index} criterion={criterion} />
           ))}
         </div>
+      </div>
+
+      {/* Essay Improvement Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-ocean-800 mb-4">Improved Essay Example</h2>
+        <EssayImprovement
+          essayId={params.essayId}
+          originalEssay={essay.essay_content}
+          initialImprovedEssay={essay.improved_essay}
+          initialChanges={essay.improvement_changes}
+        />
       </div>
 
       {/* Next Steps - Vocabulary */}

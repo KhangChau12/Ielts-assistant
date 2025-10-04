@@ -34,6 +34,12 @@ export interface EssayScoringResponse {
   overall_score: number
 }
 
+export interface ImprovementChange {
+  original: string
+  improved: string
+  reason: string
+}
+
 export interface Essay {
   id: string
   user_id: string
@@ -56,5 +62,7 @@ export interface Essay {
   coherence_cohesion_strengths: string[] | null
   lexical_resource_strengths: string[] | null
   grammatical_accuracy_strengths: string[] | null
+  improved_essay: string | null
+  improvement_changes: ImprovementChange[] | null
   created_at: string
 }
