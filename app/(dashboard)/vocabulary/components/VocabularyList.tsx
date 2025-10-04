@@ -1,13 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { BookOpen, Loader2, Sparkles, Lightbulb, Clock, CheckCircle, Eye, Target, Award } from 'lucide-react'
+import { BookOpen, Loader2, Sparkles, Lightbulb, Clock, CheckCircle, Eye, Target, Award, Filter } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'next/navigation'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface EssayWithVocab {
   id: string
@@ -19,10 +26,12 @@ interface EssayWithVocab {
   paraphraseStatus: {
     hasViewed: boolean
     quizScore: number | null
+    totalQuestions: number | null
   }
   topicStatus: {
     hasViewed: boolean
     quizScore: number | null
+    totalQuestions: number | null
   }
 }
 
@@ -37,6 +46,8 @@ export function VocabularyList({ essays }: VocabularyListProps) {
   const [progress, setProgress] = useState<{ [key: string]: number }>({})
   const [elapsedTime, setElapsedTime] = useState<{ [key: string]: number }>({})
   const [currentLoadingKey, setCurrentLoadingKey] = useState<string | null>(null)
+  const [filterOption, setFilterOption] = useState<string>('all')
+  const [optimisticUpdates, setOptimisticUpdates] = useState<{ [key: string]: { hasParaphraseVocab?: boolean; hasTopicVocab?: boolean } }>({})
 
   // Timer for elapsed time
   useEffect(() => {
@@ -85,31 +96,23 @@ export function VocabularyList({ essays }: VocabularyListProps) {
     return text.substring(0, maxLength).trim() + '...'
   }
 
-  const getStatusBadge = (status: { hasViewed: boolean; quizScore: number | null }, hasVocab: boolean) => {
+  const getStatusBadge = (status: { hasViewed: boolean; quizScore: number | null; totalQuestions: number | null }, hasVocab: boolean) => {
     if (!hasVocab) return null
 
-    if (status.quizScore !== null) {
+    if (status.quizScore !== null && status.totalQuestions !== null) {
       return (
         <Badge className="bg-green-600 text-white border-green-700">
           <Award className="h-3 w-3 mr-1" />
-          {status.quizScore}/20
+          Tested: {status.quizScore}/{status.totalQuestions}
         </Badge>
       )
     }
 
-    if (status.hasViewed) {
-      return (
-        <Badge variant="outline" className="border-yellow-500 text-yellow-700 bg-yellow-50">
-          <Eye className="h-3 w-3 mr-1" />
-          Viewed
-        </Badge>
-      )
-    }
-
+    // Always show "Not tested yet" if no quiz score, regardless of view status
     return (
-      <Badge variant="outline" className="border-slate-300 text-slate-600">
+      <Badge variant="outline" className="border-orange-400 text-orange-700 bg-orange-50">
         <Target className="h-3 w-3 mr-1" />
-        Not viewed
+        Not tested yet
       </Badge>
     )
   }
@@ -142,24 +145,129 @@ export function VocabularyList({ essays }: VocabularyListProps) {
       }
 
       setProgress(prev => ({ ...prev, [key]: 100 }))
-      setTimeout(() => {
-        router.refresh()
-      }, 500)
+
+      // Optimistic update - immediately update UI
+      setOptimisticUpdates(prev => ({
+        ...prev,
+        [essayId]: {
+          ...prev[essayId],
+          ...(type === 'paraphrase' ? { hasParaphraseVocab: true } : { hasTopicVocab: true })
+        }
+      }))
+
+      // Then refresh from server in background
+      router.refresh()
     } catch (error) {
       console.error('Error generating vocabulary:', error)
       setErrors(prev => ({
         ...prev,
         [key]: error instanceof Error ? error.message : 'Failed to generate vocabulary'
       }))
+
+      // Revert optimistic update on error
+      setOptimisticUpdates(prev => {
+        const updated = { ...prev }
+        delete updated[essayId]
+        return updated
+      })
     } finally {
       setLoadingStates(prev => ({ ...prev, [key]: false }))
       setCurrentLoadingKey(null)
     }
   }
 
+  // Apply optimistic updates to essays
+  const essaysWithOptimisticUpdates = useMemo(() => {
+    return essays.map(essay => {
+      const updates = optimisticUpdates[essay.id]
+      if (!updates) return essay
+
+      return {
+        ...essay,
+        hasParaphraseVocab: updates.hasParaphraseVocab ?? essay.hasParaphraseVocab,
+        hasTopicVocab: updates.hasTopicVocab ?? essay.hasTopicVocab,
+      }
+    })
+  }, [essays, optimisticUpdates])
+
+  // Filter and sort essays based on selected option
+  const filteredEssays = useMemo(() => {
+    let filtered = [...essaysWithOptimisticUpdates]
+
+    switch (filterOption) {
+      case 'not-generated':
+        // Show essays that haven't generated any vocabulary yet
+        filtered = filtered.filter(essay =>
+          !essay.hasParaphraseVocab && !essay.hasTopicVocab
+        )
+        break
+      case 'not-tested':
+        // Show essays with vocab that haven't been tested yet
+        filtered = filtered.filter(essay =>
+          (essay.hasParaphraseVocab && essay.paraphraseStatus.quizScore === null) ||
+          (essay.hasTopicVocab && essay.topicStatus.quizScore === null)
+        )
+        break
+      case 'low-score':
+        // Show essays with quiz score < 70%
+        filtered = filtered.filter(essay => {
+          const paraphrasePercent = essay.paraphraseStatus.quizScore !== null && essay.paraphraseStatus.totalQuestions !== null
+            ? (essay.paraphraseStatus.quizScore / essay.paraphraseStatus.totalQuestions) * 100
+            : null
+          const topicPercent = essay.topicStatus.quizScore !== null && essay.topicStatus.totalQuestions !== null
+            ? (essay.topicStatus.quizScore / essay.topicStatus.totalQuestions) * 100
+            : null
+
+          const hasLowScore =
+            (paraphrasePercent !== null && paraphrasePercent < 70) ||
+            (topicPercent !== null && topicPercent < 70)
+          return hasLowScore
+        })
+        break
+      case 'completed':
+        // Show essays with at least one quiz completed
+        filtered = filtered.filter(essay =>
+          essay.paraphraseStatus.quizScore !== null || essay.topicStatus.quizScore !== null
+        )
+        break
+      case 'all':
+      default:
+        // Show all essays
+        break
+    }
+
+    return filtered
+  }, [essaysWithOptimisticUpdates, filterOption])
+
   return (
     <div className="space-y-4">
-      {essays.map((essay) => {
+      {/* Filter Controls */}
+      <Card className="border-ocean-200 shadow-sm">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-ocean-700">
+              <Filter className="h-4 w-4" />
+              <span className="text-sm font-medium">Filter:</span>
+            </div>
+            <Select value={filterOption} onValueChange={setFilterOption}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter essays" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Essays</SelectItem>
+                <SelectItem value="not-generated">Not Generated Yet</SelectItem>
+                <SelectItem value="not-tested">Not Tested Yet</SelectItem>
+                <SelectItem value="low-score">Low Quiz Score (&lt; 70%)</SelectItem>
+                <SelectItem value="completed">Quiz Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-ocean-600 ml-auto">
+              Showing {filteredEssays.length} of {essays.length} essays
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+      {filteredEssays.map((essay) => {
         const paraphraseKey = `${essay.id}-paraphrase`
         const topicKey = `${essay.id}-topic`
         const paraphraseLoading = loadingStates[paraphraseKey]
@@ -182,7 +290,7 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                     )}
                   </CardDescription>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 items-end">
                   {essay.hasParaphraseVocab && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-ocean-600 font-medium">Paraphrase:</span>

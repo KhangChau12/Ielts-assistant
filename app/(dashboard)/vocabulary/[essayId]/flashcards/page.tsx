@@ -5,9 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, RotateCw, BrainCircuit, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import type { VocabularyItem } from '@/types/vocabulary'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function FlashcardsPage({ params }: { params: { essayId: string } }) {
   const router = useRouter()
@@ -19,6 +25,8 @@ export default function FlashcardsPage({ params }: { params: { essayId: string }
   const [isFlipped, setIsFlipped] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [hasParaphraseVocab, setHasParaphraseVocab] = useState(false)
+  const [hasTopicVocab, setHasTopicVocab] = useState(false)
 
   useEffect(() => {
     fetchVocabulary()
@@ -37,6 +45,12 @@ export default function FlashcardsPage({ params }: { params: { essayId: string }
         setError('No vocabulary found for this essay')
       } else {
         setVocabulary(data.vocabulary)
+
+        // Check what vocab types are available
+        const paraphraseExists = data.vocabulary.some((v: VocabularyItem) => v.vocab_type === 'paraphrase')
+        const topicExists = data.vocabulary.some((v: VocabularyItem) => v.vocab_type === 'topic')
+        setHasParaphraseVocab(paraphraseExists)
+        setHasTopicVocab(topicExists)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load vocabulary')
@@ -102,14 +116,73 @@ export default function FlashcardsPage({ params }: { params: { essayId: string }
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <Link href={`/vocabulary/${params.essayId}`}>
-          <Button variant="ghost" className="mb-4 text-ocean-600 hover:text-ocean-800 hover:bg-ocean-50">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Vocabulary
-          </Button>
-        </Link>
+        <div className="flex justify-between items-start mb-4">
+          <Link href={`/vocabulary/${params.essayId}`}>
+            <Button variant="ghost" className="text-ocean-600 hover:text-ocean-800 hover:bg-ocean-50">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Vocabulary
+            </Button>
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div onMouseEnter={(e) => {
+                const button = e.currentTarget.querySelector('button')
+                button?.click()
+              }}>
+                <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white shadow-md hover:shadow-lg transition-all">
+                  <BrainCircuit className="mr-2 h-4 w-4" />
+                  Take Quiz
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {vocabType === 'paraphrase' && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/vocabulary/${params.essayId}/quiz?type=paraphrase`} className="cursor-pointer">
+                    Paraphrase Only
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {vocabType === 'topic' && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/vocabulary/${params.essayId}/quiz?type=topic`} className="cursor-pointer">
+                    Topic Only
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {vocabType === 'mixed' && (hasParaphraseVocab || hasTopicVocab) && (
+                <>
+                  {hasParaphraseVocab && (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/quiz?type=paraphrase`} className="cursor-pointer">
+                        Paraphrase Only
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {hasTopicVocab && (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/quiz?type=topic`} className="cursor-pointer">
+                        Topic Only
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+              {(hasParaphraseVocab && hasTopicVocab) && (
+                <DropdownMenuItem asChild>
+                  <Link href={`/vocabulary/${params.essayId}/quiz?type=both`} className="cursor-pointer">
+                    Mixed (Both Types)
+                  </Link>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <h1 className="text-4xl font-bold text-ocean-800 mb-2">Flashcards</h1>
-        <p className="text-ocean-600 capitalize">{vocabType} Vocabulary</p>
+        <p className="text-ocean-600 capitalize">
+          {vocabType === 'mixed' ? 'Mixed (Paraphrase + Topic)' : `${vocabType} Vocabulary`}
+        </p>
       </div>
 
       {/* Progress Bar */}

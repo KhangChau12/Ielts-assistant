@@ -16,10 +16,12 @@ interface EssayWithVocab {
   paraphraseStatus: {
     hasViewed: boolean
     quizScore: number | null
+    totalQuestions: number | null
   }
   topicStatus: {
     hasViewed: boolean
     quizScore: number | null
+    totalQuestions: number | null
   }
 }
 
@@ -74,7 +76,7 @@ async function getEssaysWithVocabulary(): Promise<EssayWithVocab[]> {
       // Get latest quiz scores
       const { data: paraphraseQuiz } = await supabase
         .from('vocabulary_quiz_attempts')
-        .select('score')
+        .select('score, total_questions')
         .eq('essay_id', essay.id)
         .eq('user_id', user.id)
         .eq('vocab_type', 'paraphrase')
@@ -84,7 +86,7 @@ async function getEssaysWithVocabulary(): Promise<EssayWithVocab[]> {
 
       const { data: topicQuiz } = await supabase
         .from('vocabulary_quiz_attempts')
-        .select('score')
+        .select('score, total_questions')
         .eq('essay_id', essay.id)
         .eq('user_id', user.id)
         .eq('vocab_type', 'topic')
@@ -99,10 +101,12 @@ async function getEssaysWithVocabulary(): Promise<EssayWithVocab[]> {
         paraphraseStatus: {
           hasViewed: hasViewedParaphrase,
           quizScore: paraphraseQuiz?.score || null,
+          totalQuestions: paraphraseQuiz?.total_questions || null,
         },
         topicStatus: {
           hasViewed: hasViewedTopic,
           quizScore: topicQuiz?.score || null,
+          totalQuestions: topicQuiz?.total_questions || null,
         },
       }
     })

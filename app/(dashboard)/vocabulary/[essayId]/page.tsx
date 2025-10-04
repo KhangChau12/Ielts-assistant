@@ -1,61 +1,25 @@
-import { createServerClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { BookOpen, BrainCircuit, ArrowLeft } from 'lucide-react'
+import { BookOpen, BrainCircuit, ArrowLeft, ChevronDown } from 'lucide-react'
 import type { VocabularyItem } from '@/types/vocabulary'
 import type { Essay } from '@/types/essay'
 import { HighlightedEssay } from './components/HighlightedEssay'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface VocabularyPageProps {
   params: {
     essayId: string
-  }
-}
-
-async function getVocabularyData(essayId: string) {
-  const supabase = createServerClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  // Get the essay
-  const { data: essay, error: essayError } = await supabase
-    .from('essays')
-    .select('*')
-    .eq('id', essayId)
-    .eq('user_id', user.id)
-    .single()
-
-  if (essayError || !essay) {
-    notFound()
-  }
-
-  // Get all vocabulary for this essay
-  const { data: vocabulary, error: vocabError } = await supabase
-    .from('vocabulary')
-    .select('*')
-    .eq('essay_id', essayId)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-
-  if (vocabError) {
-    console.error('Error fetching vocabulary:', vocabError)
-    return { essay, paraphraseVocab: [], topicVocab: [] }
-  }
-
-  const paraphraseVocab = vocabulary?.filter(v => v.vocab_type === 'paraphrase') || []
-  const topicVocab = vocabulary?.filter(v => v.vocab_type === 'topic') || []
-
-  return {
-    essay,
-    paraphraseVocab,
-    topicVocab,
   }
 }
 
@@ -86,8 +50,47 @@ function VocabCard({ item }: { item: VocabularyItem }) {
   )
 }
 
-export default async function VocabularyDetailPage({ params }: VocabularyPageProps) {
-  const { essay, paraphraseVocab, topicVocab } = await getVocabularyData(params.essayId)
+export default function VocabularyDetailPage({ params }: VocabularyPageProps) {
+  const router = useRouter()
+  const [essay, setEssay] = useState<Essay | null>(null)
+  const [paraphraseVocab, setParaphraseVocab] = useState<VocabularyItem[]>([])
+  const [topicVocab, setTopicVocab] = useState<VocabularyItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchData()
+  }, [params.essayId])
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`/api/vocabulary/${params.essayId}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        router.push('/vocabulary')
+        return
+      }
+
+      setEssay(data.essay)
+      setParaphraseVocab(data.vocabulary?.filter((v: VocabularyItem) => v.vocab_type === 'paraphrase') || [])
+      setTopicVocab(data.vocabulary?.filter((v: VocabularyItem) => v.vocab_type === 'topic') || [])
+    } catch (error) {
+      console.error('Error fetching vocabulary:', error)
+      router.push('/vocabulary')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading || !essay) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-ocean-600">Loading...</div>
+        </div>
+      </div>
+    )
+  }
 
   const hasParaphraseVocab = paraphraseVocab.length > 0
   const hasTopicVocab = topicVocab.length > 0
@@ -153,27 +156,72 @@ export default async function VocabularyDetailPage({ params }: VocabularyPagePro
           {/* Paraphrase Tab */}
           <TabsContent value="paraphrase" className="mt-6">
             <div className="space-y-6">
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div onMouseEnter={(e) => {
+                      const button = e.currentTarget.querySelector('button')
+                      button?.click()
+                    }}>
+                      <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white">
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        Flashcards
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/flashcards?type=paraphrase`} className="cursor-pointer">
+                        Paraphrase Only
+                      </Link>
+                    </DropdownMenuItem>
+                    {hasTopicVocab && (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/vocabulary/${params.essayId}/flashcards?type=mixed`} className="cursor-pointer">
+                          Mixed (Both Types)
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div onMouseEnter={(e) => {
+                      const button = e.currentTarget.querySelector('button')
+                      button?.click()
+                    }}>
+                      <Button variant="outline" className="border-ocean-300 text-ocean-700 hover:bg-ocean-50">
+                        <BrainCircuit className="mr-2 h-4 w-4" />
+                        Quiz
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/quiz?type=paraphrase`} className="cursor-pointer">
+                        Paraphrase Only
+                      </Link>
+                    </DropdownMenuItem>
+                    {hasTopicVocab && (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/vocabulary/${params.essayId}/quiz?type=both`} className="cursor-pointer">
+                          Mixed (Both Types)
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               {/* Original Essay with Highlights */}
               <HighlightedEssay
                 essayContent={essay.essay_content}
                 vocabularyItems={paraphraseVocab}
               />
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <Link href={`/vocabulary/${params.essayId}/flashcards?type=paraphrase`}>
-                  <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Create Flashcards
-                  </Button>
-                </Link>
-                <Link href={`/vocabulary/${params.essayId}/quiz?type=paraphrase`}>
-                  <Button variant="outline" className="border-ocean-300 text-ocean-700 hover:bg-ocean-50">
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                    Start Quiz
-                  </Button>
-                </Link>
-              </div>
 
               {/* Vocabulary Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -189,18 +237,63 @@ export default async function VocabularyDetailPage({ params }: VocabularyPagePro
             <div className="space-y-6">
               {/* Action Buttons */}
               <div className="flex gap-3">
-                <Link href={`/vocabulary/${params.essayId}/flashcards?type=topic`}>
-                  <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white shadow-md hover:shadow-colored transition-all">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Create Flashcards
-                  </Button>
-                </Link>
-                <Link href={`/vocabulary/${params.essayId}/quiz?type=topic`}>
-                  <Button variant="outline" className="border-ocean-300 text-ocean-700 hover:bg-ocean-50 transition-all">
-                    <BrainCircuit className="mr-2 h-4 w-4" />
-                    Start Quiz
-                  </Button>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div onMouseEnter={(e) => {
+                      const button = e.currentTarget.querySelector('button')
+                      button?.click()
+                    }}>
+                      <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white">
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        Flashcards
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/flashcards?type=topic`} className="cursor-pointer">
+                        Topic Only
+                      </Link>
+                    </DropdownMenuItem>
+                    {hasParaphraseVocab && (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/vocabulary/${params.essayId}/flashcards?type=mixed`} className="cursor-pointer">
+                          Mixed (Both Types)
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div onMouseEnter={(e) => {
+                      const button = e.currentTarget.querySelector('button')
+                      button?.click()
+                    }}>
+                      <Button variant="outline" className="border-ocean-300 text-ocean-700 hover:bg-ocean-50">
+                        <BrainCircuit className="mr-2 h-4 w-4" />
+                        Quiz
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/vocabulary/${params.essayId}/quiz?type=topic`} className="cursor-pointer">
+                        Topic Only
+                      </Link>
+                    </DropdownMenuItem>
+                    {hasParaphraseVocab && (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/vocabulary/${params.essayId}/quiz?type=both`} className="cursor-pointer">
+                          Mixed (Both Types)
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Vocabulary Grid */}

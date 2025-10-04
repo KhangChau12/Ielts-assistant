@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Zap, RefreshCw } from 'lucide-react'
+import { Users, FileText, Zap, RefreshCw, BookOpen, Award, Brain } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -35,6 +35,21 @@ interface AdminStats {
   essaysOverTime: Array<{
     overall_score: number | null
     created_at: string
+  }>
+  // Vocabulary stats
+  totalVocabulary: number
+  totalQuizAttempts: number
+  totalCorrectAnswers: number
+  totalQuestions: number
+  avgQuizScore: number
+  avgParaphraseScore: number
+  avgTopicScore: number
+  quizAttemptsOverTime: Array<{
+    score: number
+    total_questions: number
+    vocab_type: string
+    created_at: string
+    percentage: number
   }>
 }
 
@@ -102,6 +117,27 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
       return acc
     }, [])
     .slice(-14)
+
+  // Prepare quiz performance data
+  const quizPerformanceData = stats.quizAttemptsOverTime
+    ?.reduce((acc: any[], quiz) => {
+      const date = format(new Date(quiz.created_at), 'MMM dd')
+      const existing = acc.find((item) => item.date === date)
+      if (existing) {
+        existing.attempts += 1
+        existing.totalPercentage += quiz.percentage
+        existing.avgPercentage = existing.totalPercentage / existing.attempts
+      } else {
+        acc.push({
+          date,
+          attempts: 1,
+          totalPercentage: quiz.percentage,
+          avgPercentage: quiz.percentage,
+        })
+      }
+      return acc
+    }, [])
+    .slice(-14) || []
 
   return (
     <>
@@ -188,6 +224,79 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
               {formatNumber(stats.totalOutputTokens)}
             </div>
             <p className="text-xs text-indigo-600 mt-1">Total generated</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Vocabulary Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-teal-700">
+              Total Vocabulary
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 p-2 shadow-md">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-teal-700 to-emerald-700 bg-clip-text text-transparent">
+              {formatNumber(stats.totalVocabulary)}
+            </div>
+            <p className="text-xs text-teal-600 mt-1">Words generated</p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-700">
+              Words Learned
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 p-2 shadow-md">
+              <Award className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">
+              {formatNumber(stats.totalCorrectAnswers)}
+            </div>
+            <p className="text-xs text-emerald-600 mt-1">
+              of {formatNumber(stats.totalQuestions)} tested ({stats.avgQuizScore}%)
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-green-700">
+              Paraphrase Score
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-green-500 to-lime-600 p-2 shadow-md">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-700 to-lime-700 bg-clip-text text-transparent">
+              {stats.avgParaphraseScore}%
+            </div>
+            <p className="text-xs text-green-600 mt-1">Average accuracy</p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-lime-700">
+              Topic Score
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-lime-500 to-yellow-600 p-2 shadow-md">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-lime-700 to-yellow-700 bg-clip-text text-transparent">
+              {stats.avgTopicScore}%
+            </div>
+            <p className="text-xs text-lime-600 mt-1">Average accuracy</p>
           </CardContent>
         </Card>
       </div>
@@ -323,6 +432,56 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
           ) : (
             <div className="h-[350px] flex items-center justify-center text-ocean-600">
               <p>No essay data available</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Quiz Performance Over Time Chart */}
+      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
+        <CardHeader>
+          <CardTitle className="bg-gradient-to-r from-teal-700 to-emerald-700 bg-clip-text text-transparent">Quiz Performance Over Time</CardTitle>
+          <CardDescription>Average quiz accuracy trends over the last 14 days</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {quizPerformanceData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={quizPerformanceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#0c4a6e"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  stroke="#0c4a6e"
+                  style={{ fontSize: '12px' }}
+                  domain={[0, 100]}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: any) => `${Math.round(value)}%`}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="avgPercentage"
+                  stroke="#10b981"
+                  strokeWidth={3}
+                  dot={{ fill: '#10b981', r: 5 }}
+                  activeDot={{ r: 7 }}
+                  name="Average Score"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[350px] flex items-center justify-center text-ocean-600">
+              <p>No quiz data available</p>
             </div>
           )}
         </CardContent>

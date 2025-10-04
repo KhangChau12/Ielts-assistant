@@ -20,6 +20,21 @@ interface AdminStats {
     overall_score: number | null
     created_at: string
   }>
+  // Vocabulary stats
+  totalVocabulary: number
+  totalQuizAttempts: number
+  totalCorrectAnswers: number
+  totalQuestions: number
+  avgQuizScore: number
+  avgParaphraseScore: number
+  avgTopicScore: number
+  quizAttemptsOverTime: Array<{
+    score: number
+    total_questions: number
+    vocab_type: string
+    created_at: string
+    percentage: number
+  }>
 }
 
 async function getAdminStats(): Promise<AdminStats> {
@@ -49,6 +64,14 @@ async function getAdminStats(): Promise<AdminStats> {
       avgOverallScore: 0,
       recentUsers: [],
       essaysOverTime: [],
+      totalVocabulary: 0,
+      totalQuizAttempts: 0,
+      totalCorrectAnswers: 0,
+      totalQuestions: 0,
+      avgQuizScore: 0,
+      avgParaphraseScore: 0,
+      avgTopicScore: 0,
+      quizAttemptsOverTime: [],
     }
   }
 }

@@ -17,6 +17,7 @@ interface QuizQuestion {
   options?: string[]
   firstLetter: string
   originalWord?: string
+  vocabType?: string // Track which vocab type this question belongs to
 }
 
 type QuizType = 'multiple_choice' | 'fill_in' | null
@@ -73,6 +74,7 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
         correctAnswer: item.suggested_word.toLowerCase(),
         firstLetter: item.suggested_word[0].toLowerCase(),
         originalWord: item.original_word || undefined,
+        vocabType: item.vocab_type, // Store the vocab type for each question
       }
 
       if (type === 'multiple_choice') {
@@ -135,20 +137,102 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
     setIsSubmitting(true)
 
     try {
-      await fetch('/api/vocabulary/quiz-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          essay_id: params.essayId,
-          quiz_type: quizType,
-          score,
-          total_questions: total,
-          correct_answers: correctAnswers,
-          incorrect_answers: incorrectAnswers,
-        }),
-      })
+      // If this is a mixed quiz (both/mixed), we need to save separate results for each vocab type
+      if (vocabType === 'both' || vocabType === 'mixed') {
+        // Separate questions by vocab type
+        const paraphraseResults = {
+          correct: [] as string[],
+          incorrect: [] as string[],
+          total: 0
+        }
+        const topicResults = {
+          correct: [] as string[],
+          incorrect: [] as string[],
+          total: 0
+        }
+
+        questions.forEach((q, i) => {
+          const isCorrect = answers[i] === q.correctAnswer
+          const resultItem = isCorrect
+            ? q.correctAnswer
+            : `${q.correctAnswer} (your answer: ${answers[i] || 'no answer'})`
+
+          if (q.vocabType === 'paraphrase') {
+            paraphraseResults.total++
+            if (isCorrect) {
+              paraphraseResults.correct.push(resultItem)
+            } else {
+              paraphraseResults.incorrect.push(resultItem)
+            }
+          } else if (q.vocabType === 'topic') {
+            topicResults.total++
+            if (isCorrect) {
+              topicResults.correct.push(resultItem)
+            } else {
+              topicResults.incorrect.push(resultItem)
+            }
+          }
+        })
+
+        // Save paraphrase results if any
+        if (paraphraseResults.total > 0) {
+          await fetch('/api/vocabulary/quiz-results', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              essay_id: params.essayId,
+              vocab_type: 'paraphrase',
+              quiz_type: quizType,
+              score: paraphraseResults.correct.length,
+              total_questions: paraphraseResults.total,
+              correct_answers: paraphraseResults.correct,
+              incorrect_answers: paraphraseResults.incorrect,
+            }),
+          })
+        }
+
+        // Save topic results if any
+        if (topicResults.total > 0) {
+          await fetch('/api/vocabulary/quiz-results', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              essay_id: params.essayId,
+              vocab_type: 'topic',
+              quiz_type: quizType,
+              score: topicResults.correct.length,
+              total_questions: topicResults.total,
+              correct_answers: topicResults.correct,
+              incorrect_answers: topicResults.incorrect,
+            }),
+          })
+        }
+      } else {
+        // Single vocab type quiz - save as before
+        const response = await fetch('/api/vocabulary/quiz-results', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            essay_id: params.essayId,
+            vocab_type: vocabType,
+            quiz_type: quizType,
+            score,
+            total_questions: total,
+            correct_answers: correctAnswers,
+            incorrect_answers: incorrectAnswers,
+          }),
+        })
+
+        if (!response.ok) {
+          console.error('Failed to save quiz results')
+        }
+      }
     } catch (err) {
       console.error('Error saving quiz results:', err)
     } finally {
@@ -208,7 +292,9 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
           </Button>
         </Link>
         <h1 className="text-4xl font-bold text-ocean-800 mb-2">Vocabulary Quiz</h1>
-        <p className="text-ocean-600 capitalize">{vocabType} Vocabulary</p>
+        <p className="text-ocean-600 capitalize">
+          {vocabType === 'both' ? 'Mixed (Paraphrase + Topic)' : `${vocabType} Vocabulary`}
+        </p>
       </div>
 
       {/* Quiz Type Selection */}
