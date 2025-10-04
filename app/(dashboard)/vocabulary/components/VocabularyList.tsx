@@ -63,21 +63,21 @@ export function VocabularyList({ essays }: VocabularyListProps) {
     return () => clearInterval(interval)
   }, [currentLoadingKey])
 
-  // Simulate progress - 10 seconds total for vocabulary
+  // Simulate progress - 8 seconds total for vocabulary (GPT-4o with caching)
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (currentLoadingKey && (progress[currentLoadingKey] || 0) < 95) {
       interval = setInterval(() => {
         setProgress(prev => {
           const current = prev[currentLoadingKey] || 0
-          // 10 seconds = 10000ms, update every 150ms = ~67 updates
-          // Each update = ~1.4% to reach 95% in 10s
+          // 8 seconds = 8000ms, update every 100ms = 80 updates
+          // Each update = ~1.19% to reach 95% in 8s
           if (current < 95) {
-            return { ...prev, [currentLoadingKey]: current + 1.4 }
+            return { ...prev, [currentLoadingKey]: current + 1.19 }
           }
           return prev
         })
-      }, 150)
+      }, 100)
     }
     return () => clearInterval(interval)
   }, [currentLoadingKey, progress])

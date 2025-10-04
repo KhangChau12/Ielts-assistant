@@ -3,16 +3,15 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { Essay } from '@/types/essay'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { AlertCircle, CheckCircle2, FileText, BookOpen, ArrowRight, Sparkles } from 'lucide-react'
+import { AlertCircle, CheckCircle2, FileText, BookOpen, Sparkles } from 'lucide-react'
 import { EssayImprovement } from './components/EssayImprovement'
+import { VocabGenerateButtons } from './components/VocabGenerateButtons'
 
 interface CriterionData {
   name: string
@@ -24,12 +23,21 @@ interface CriterionData {
 
 function getScoreColor(score: number | null): string {
   if (score === null) return 'bg-gray-500'
+  if (score >= 8) return 'bg-gradient-to-r from-amber-500 to-yellow-500'
   if (score >= 7) return 'bg-green-600'
   if (score >= 5.5) return 'bg-yellow-600'
   return 'bg-red-600'
 }
 
-function CriterionCard({ criterion }: { criterion: CriterionData }) {
+function formatCriterionScore(score: number | null, overallScore: number | null): string {
+  if (score === null) return 'N/A'
+  if (overallScore !== null && overallScore >= 8.0 && score >= 8) {
+    return `${score.toFixed(0)}+`
+  }
+  return score.toFixed(1)
+}
+
+function CriterionCard({ criterion, overallScore }: { criterion: CriterionData; overallScore: number | null }) {
   const hasErrors = criterion.errors && criterion.errors.length > 0
   const hasStrengths = criterion.strengths && criterion.strengths.length > 0
 
@@ -41,7 +49,7 @@ function CriterionCard({ criterion }: { criterion: CriterionData }) {
           <Badge
             className={`${getScoreColor(criterion.score)} text-white font-bold px-3 py-1 text-sm`}
           >
-            {criterion.score !== null ? criterion.score.toFixed(1) : 'N/A'}
+            {formatCriterionScore(criterion.score, overallScore)}
           </Badge>
         </div>
       </CardHeader>
@@ -155,6 +163,15 @@ export default async function EssayResultsPage({
 
   const typedEssay = essay as Essay
 
+  // Check if vocabulary exists
+  const { data: vocabData } = await supabase
+    .from('vocabulary')
+    .select('vocab_type')
+    .eq('essay_id', params.essayId)
+
+  const hasParaphrase = vocabData?.some(v => v.vocab_type === 'paraphrase') || false
+  const hasTopic = vocabData?.some(v => v.vocab_type === 'topic') || false
+
   const criteria: CriterionData[] = [
     {
       name: 'Task Response',
@@ -195,17 +212,38 @@ export default async function EssayResultsPage({
 
       {/* Overall Score Card */}
       <Card className="border-ocean-300 shadow-lg mb-8 overflow-hidden">
-        <div className="bg-gradient-to-r from-ocean-600 to-cyan-600 text-white p-8">
+        <div className={`${typedEssay.overall_score !== null && typedEssay.overall_score >= 8.0
+          ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600'
+          : 'bg-gradient-to-r from-ocean-600 to-cyan-600'} text-white p-8`}>
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2 opacity-90">Overall Band Score</h2>
             <div className="text-7xl font-bold mb-2">
-              {typedEssay.overall_score !== null ? typedEssay.overall_score.toFixed(1) : 'N/A'}
+              {typedEssay.overall_score !== null
+                ? (typedEssay.overall_score >= 8.0
+                    ? `${typedEssay.overall_score.toFixed(1)}~9`
+                    : typedEssay.overall_score.toFixed(1))
+                : 'N/A'}
             </div>
-            <p className="text-ocean-100 text-sm">
+            <p className="text-white/90 text-sm">
               IELTS Writing Task 2
             </p>
           </div>
         </div>
+
+        {/* Band 8+ Disclaimer */}
+        {typedEssay.overall_score !== null && typedEssay.overall_score >= 8.0 && (
+          <div className="bg-amber-50 border-t border-amber-200 p-4">
+            <div className="flex items-start gap-3">
+              <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-amber-900">
+                <p className="font-medium mb-1">Exceptional Achievement</p>
+                <p className="text-amber-800 leading-relaxed">
+                  At this level, scores often depend on examiner perception. You've reached an exceptional standard where it's difficult to identify specific areas for improvement.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Essay Content */}
@@ -244,7 +282,7 @@ export default async function EssayResultsPage({
         <h2 className="text-2xl font-bold text-ocean-800 mb-4">Detailed Criteria Scores</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {criteria.map((criterion, index) => (
-            <CriterionCard key={index} criterion={criterion} />
+            <CriterionCard key={index} criterion={criterion} overallScore={typedEssay.overall_score} />
           ))}
         </div>
       </div>
@@ -262,25 +300,21 @@ export default async function EssayResultsPage({
 
       {/* Next Steps - Vocabulary */}
       <Card className="border-ocean-200 shadow-lg mb-6">
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg">
-                <BookOpen className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-ocean-800 text-lg mb-1">Improve Your Vocabulary</h3>
-                <p className="text-sm text-ocean-600 mb-3">
-                  Generate paraphrase suggestions and discover topic-specific advanced vocabulary to enhance your writing.
-                </p>
-                <Link href={`/vocabulary/${params.essayId}`}>
-                  <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white">
-                    Go to Vocabulary <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+        <CardHeader className="bg-gradient-to-r from-ocean-50 to-cyan-50 border-b border-ocean-200">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-ocean-600" />
+            <CardTitle className="text-ocean-800">Improve Your Vocabulary</CardTitle>
           </div>
+          <CardDescription>
+            Generate paraphrase suggestions and discover topic-specific advanced vocabulary to enhance your writing.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <VocabGenerateButtons
+            essayId={params.essayId}
+            initialHasParaphrase={hasParaphrase}
+            initialHasTopic={hasTopic}
+          />
         </CardContent>
       </Card>
 

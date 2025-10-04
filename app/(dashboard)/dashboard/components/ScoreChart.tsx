@@ -33,9 +33,10 @@ export function ScoreChart({ data }: ScoreChartProps) {
           />
           <YAxis
             domain={[4, 9]}
-            ticks={[4, 5, 6, 7, 8, 9]}
+            ticks={[4, 5, 6, 7, 8]}
             stroke="#0c4a6e"
             tick={{ fill: '#0c4a6e', fontSize: 12 }}
+            tickFormatter={(value) => value === 8 ? '8-9' : value.toString()}
             label={{
               value: 'Band Score',
               angle: -90,
@@ -53,10 +54,12 @@ export function ScoreChart({ data }: ScoreChartProps) {
             labelStyle={{ color: '#0c4a6e', fontWeight: 600 }}
             formatter={(value: number, name: string, props: any) => {
               const date = props.payload.date
+              // Display Band 8 and 9 as "8-9"
+              const displayScore = value >= 8 ? '8-9' : value.toFixed(1)
               return [
                 <div key="tooltip" className="space-y-1">
                   <div className="text-cyan-700 font-bold text-lg">
-                    Score: {value.toFixed(1)}
+                    Band: {displayScore}
                   </div>
                   <div className="text-ocean-600 text-xs">
                     {format(new Date(date), 'MMM d, yyyy')}

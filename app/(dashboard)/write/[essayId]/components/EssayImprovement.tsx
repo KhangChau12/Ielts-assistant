@@ -105,13 +105,13 @@ export function EssayImprovement({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Progress simulation - 20 seconds for improvement
+  // Progress simulation - 3 seconds for improvement (Groq is fast!)
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isGenerating && progress < 95) {
       interval = setInterval(() => {
         setProgress(prev => {
-          const newProgress = prev + 0.79 // 95% in 20 seconds (20000ms / 150ms intervals)
+          const newProgress = prev + 3.17 // 95% in 3 seconds (3000ms / 100ms intervals)
 
           // Update stage based on progress
           if (newProgress >= 75) {
@@ -126,7 +126,7 @@ export function EssayImprovement({
 
           return Math.min(newProgress, 95)
         })
-      }, 150)
+      }, 100)
     }
     return () => clearInterval(interval)
   }, [isGenerating, progress])

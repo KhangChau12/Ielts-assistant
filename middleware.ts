@@ -6,7 +6,9 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  // Refresh session if expired
+  // Refresh session if expired - this is correct usage in middleware
+  // Note: getSession() in middleware is fine as it just refreshes cookies
+  // The warning applies to using session.user directly - always use getUser() for that
   await supabase.auth.getSession()
 
   return res

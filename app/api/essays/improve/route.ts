@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openai, DEFAULT_MODEL } from '@/lib/openai/client'
+import { openai, MODELS } from '@/lib/openai/client'
 import { ESSAY_IMPROVEMENT_PROMPT } from '@/lib/openai/prompts'
 
 export async function POST(request: Request) {
@@ -9,10 +9,11 @@ export async function POST(request: Request) {
 
     // Check authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       .from('essays')
       .select('*')
       .eq('id', essay_id)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (essayError || !essay) {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
     // Call OpenAI to improve the essay
     const completion = await openai.chat.completions.create({
-      model: DEFAULT_MODEL,
+      model: MODELS.ESSAY_IMPROVEMENT,
       messages: [
         {
           role: 'system',
@@ -120,11 +121,11 @@ export async function POST(request: Request) {
 
     // Log token usage
     await supabase.from('token_usage').insert({
-      user_id: session.user.id,
+      user_id: user.id,
       request_type: 'improvement',
       input_tokens: completion.usage?.prompt_tokens || 0,
       output_tokens: completion.usage?.completion_tokens || 0,
-      model: DEFAULT_MODEL,
+      model: MODELS.ESSAY_IMPROVEMENT,
     })
 
     return NextResponse.json({

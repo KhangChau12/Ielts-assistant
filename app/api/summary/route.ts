@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openai, DEFAULT_MODEL } from '@/lib/openai/client'
+import { openai, MODELS } from '@/lib/openai/client'
 import { ERROR_SUMMARY_PROMPT } from '@/lib/openai/prompts'
 import type { ErrorSummary } from '@/types/user'
 
@@ -9,10 +9,11 @@ export async function POST() {
     const supabase = createServerClient()
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -20,7 +21,7 @@ export async function POST() {
     const { data: essays, error: essaysError } = await supabase
       .from('essays')
       .select('task_response_errors, coherence_cohesion_errors, lexical_resource_errors, grammatical_accuracy_errors')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(15)
 
@@ -52,7 +53,7 @@ export async function POST() {
 
     // Call OpenAI to summarize errors
     const completion = await openai.chat.completions.create({
-      model: DEFAULT_MODEL,
+      model: MODELS.ERROR_SUMMARY,
       messages: [
         {
           role: 'system',
@@ -73,11 +74,11 @@ export async function POST() {
 
     // Log token usage
     await supabase.from('token_usage').insert({
-      user_id: session.user.id,
+      user_id: user.id,
       request_type: 'summary',
       input_tokens: completion.usage?.prompt_tokens || 0,
       output_tokens: completion.usage?.completion_tokens || 0,
-      model: DEFAULT_MODEL,
+      model: MODELS.ERROR_SUMMARY,
     })
 
     return NextResponse.json({ success: true, summary })

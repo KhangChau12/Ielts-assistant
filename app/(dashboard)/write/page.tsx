@@ -31,18 +31,18 @@ export default function WritePage() {
     return () => clearInterval(interval)
   }, [isSubmitting])
 
-  // Simulate progress - 15 seconds total
+  // Simulate progress - 4 seconds total (Groq is fast!)
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (isSubmitting && progress < 95) {
       interval = setInterval(() => {
         setProgress(prev => {
-          // 15 seconds = 15000ms, update every 150ms = 100 updates
-          // Each update = ~1% to reach 95% in 15s
-          if (prev < 95) return prev + 0.95
+          // 4 seconds = 4000ms, update every 100ms = 40 updates
+          // Each update = ~2.375% to reach 95% in 4s
+          if (prev < 95) return prev + 2.375
           return prev
         })
-      }, 150)
+      }, 100)
     }
     return () => clearInterval(interval)
   }, [isSubmitting, progress])

@@ -6,10 +6,11 @@ export async function POST(request: Request) {
     const supabase = createServerClient()
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       .from('vocabulary')
       .select('id')
       .eq('essay_id', essay_id)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     if (vocabError || !vocabulary || vocabulary.length === 0) {
       return NextResponse.json(
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
 
     // Create flashcards for each vocabulary item
     const flashcards = vocabulary.map((vocab) => ({
-      user_id: session.user.id,
+      user_id: user.id,
       vocab_id: vocab.id,
       next_review_date: new Date().toISOString(),
       repetition_count: 0,

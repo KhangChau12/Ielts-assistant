@@ -6,10 +6,11 @@ export async function POST(request: Request) {
     const supabase = createServerClient()
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from('vocabulary_quiz_attempts')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         essay_id,
         vocab_type,
         score,

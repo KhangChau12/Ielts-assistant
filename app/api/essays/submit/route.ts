@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openai, DEFAULT_MODEL } from '@/lib/openai/client'
+import { openai, MODELS } from '@/lib/openai/client'
 import { ESSAY_SCORING_SYSTEM_PROMPT } from '@/lib/openai/prompts'
 import type { EssayScoringResponse } from '@/types/essay'
 
@@ -10,10 +10,11 @@ export async function POST(request: Request) {
 
     // Check authentication
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -21,14 +22,14 @@ export async function POST(request: Request) {
     const { data: existingProfile, error: profileCheckError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     if (!existingProfile && !profileCheckError) {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase.from('profiles').insert({
-        id: session.user.id,
-        email: session.user.email || '',
+        id: user.id,
+        email: user.email || '',
         role: 'student'
       })
 
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
 
     // Call OpenAI to score the essay
     const completion = await openai.chat.completions.create({
-      model: DEFAULT_MODEL,
+      model: MODELS.ESSAY_SCORING,
       messages: [
         {
           role: 'system',
@@ -69,14 +70,23 @@ export async function POST(request: Request) {
 
     console.log('AI Response:', JSON.stringify(scoringResult, null, 2))
 
+    // Ensure proper rounding of overall score (round to nearest 0.5)
+    // Formula: .25 → .5, .75 → next whole number
+    const roundToHalfBand = (score: number): number => {
+      const rounded = Math.round(score * 2) / 2
+      return Math.max(0, Math.min(9, rounded)) // Clamp between 0-9
+    }
+
+    const finalOverallScore = roundToHalfBand(scoringResult.overall_score)
+
     // Save essay and scores to database
     const { data: essay, error: essayError } = await supabase
       .from('essays')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         prompt,
         essay_content,
-        overall_score: scoringResult.overall_score,
+        overall_score: finalOverallScore,
         task_response_score: scoringResult.scores.task_response,
         coherence_cohesion_score: scoringResult.scores.coherence_cohesion,
         lexical_resource_score: scoringResult.scores.lexical_resource,
@@ -112,11 +122,11 @@ export async function POST(request: Request) {
 
     // Log token usage
     await supabase.from('token_usage').insert({
-      user_id: session.user.id,
+      user_id: user.id,
       request_type: 'scoring',
       input_tokens: completion.usage?.prompt_tokens || 0,
       output_tokens: completion.usage?.completion_tokens || 0,
-      model: DEFAULT_MODEL,
+      model: MODELS.ESSAY_SCORING,
     })
 
     return NextResponse.json({ success: true, essay })

@@ -9,10 +9,11 @@ export async function GET(
     const supabase = createServerClient()
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -21,7 +22,7 @@ export async function GET(
       .from('essays')
       .select('*')
       .eq('id', params.essayId)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (essayError || !essay) {
@@ -37,7 +38,7 @@ export async function GET(
       .from('vocabulary')
       .select('*')
       .eq('essay_id', params.essayId)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     // Filter by type if specified and not 'both' or 'mixed'
     if (type && type !== 'both' && type !== 'mixed') {
@@ -62,27 +63,27 @@ export async function GET(
 
       if (type === 'paraphrase' && paraphraseVocab.length > 0) {
         viewsToInsert.push({
-          user_id: session.user.id,
+          user_id: user.id,
           essay_id: params.essayId,
           vocab_type: 'paraphrase'
         })
       } else if (type === 'topic' && topicVocab.length > 0) {
         viewsToInsert.push({
-          user_id: session.user.id,
+          user_id: user.id,
           essay_id: params.essayId,
           vocab_type: 'topic'
         })
       } else if ((type === 'both' || type === 'mixed')) {
         if (paraphraseVocab.length > 0) {
           viewsToInsert.push({
-            user_id: session.user.id,
+            user_id: user.id,
             essay_id: params.essayId,
             vocab_type: 'paraphrase'
           })
         }
         if (topicVocab.length > 0) {
           viewsToInsert.push({
-            user_id: session.user.id,
+            user_id: user.id,
             essay_id: params.essayId,
             vocab_type: 'topic'
           })
