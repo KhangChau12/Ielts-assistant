@@ -48,12 +48,14 @@ export async function GET() {
     const totalInputTokens = tokenUsage?.reduce((sum, t) => sum + (t.input_tokens || 0), 0) || 0
     const totalOutputTokens = tokenUsage?.reduce((sum, t) => sum + (t.output_tokens || 0), 0) || 0
 
-    // Calculate score distribution
+    // Calculate score distribution (merge Band 8 & 9)
     const scoreDistribution: { [key: string]: number } = {}
     essays?.forEach((essay) => {
       if (essay.overall_score) {
         const score = Math.floor(essay.overall_score)
-        scoreDistribution[score] = (scoreDistribution[score] || 0) + 1
+        // Merge Band 8 and 9 together
+        const displayScore = score >= 8 ? 8 : score
+        scoreDistribution[displayScore] = (scoreDistribution[displayScore] || 0) + 1
       }
     })
 
@@ -90,8 +92,15 @@ export async function GET() {
       percentage: q.total_questions > 0 ? (q.score / q.total_questions) * 100 : 0
     })) || []
 
+    // Calculate user tier statistics
+    const ptnkUsers = users?.filter(u => u.email?.endsWith('@ptnk.edu.vn')).length || 0
+    // Pro users who are NOT PTNK (future paid subscribers)
+    const paidProUsers = 0 // Currently we don't have paid subscriptions yet
+
     return NextResponse.json({
       totalUsers: totalUsers || 0,
+      ptnkUsers,
+      paidProUsers,
       totalEssays: totalEssays || 0,
       totalInputTokens,
       totalOutputTokens,

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Lightbulb, CheckCircle2, AlertCircle, Target } from 'lucide-react'
 
 interface GrammarImprovement {
-  type: 'sentence_combining' | 'error_correction' | 'variety_suggestion'
+  type: 'sentence_combining' | 'error_correction' | 'variety_suggestion' | 'minor_error_correction' | 'sentence_variety_suggestion' | 'positive_feedback'
   original?: string
   improved?: string
   explanation?: string
@@ -21,10 +21,13 @@ interface GrammarImprovement {
   observation?: string
   missing_structures?: string[]
   try_next?: string
+  example?: string
+  strength?: string
+  keep_doing?: string
 }
 
 interface CoherenceImprovement {
-  type: 'transition_missing' | 'positive_feedback' | 'sentence_connection'
+  type: 'transition_missing' | 'positive_feedback' | 'sentence_connection' | 'transition_suggestion' | 'paragraphing_suggestion'
   location?: string
   issue?: string
   suggestion?: string
@@ -34,6 +37,7 @@ interface CoherenceImprovement {
   current?: string
   smoother?: string
   why?: string
+  example?: string
 }
 
 interface TaskResponseDepth {
@@ -282,7 +286,7 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
                           )}
 
                           {/* Error Correction - Red (error) */}
-                          {item.type === 'error_correction' && (
+                          {(item.type === 'error_correction' || item.type === 'minor_error_correction') && (
                             <div className="bg-red-50 rounded-md p-3 border border-red-200">
                               <p className="text-xs font-semibold text-red-700 mb-2">
                                 ⚠️ Error Correction
@@ -312,7 +316,7 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
                           )}
 
                           {/* Variety Suggestion - Ocean Blue (suggestion) */}
-                          {item.type === 'variety_suggestion' && (
+                          {(item.type === 'variety_suggestion' || item.type === 'sentence_variety_suggestion') && (
                             <div className="bg-ocean-50 rounded-md p-3 border border-ocean-200">
                               <p className="text-xs font-semibold text-ocean-700 mb-2">→ Add Sentence Variety</p>
                               <div className="space-y-2 text-sm">
@@ -333,6 +337,22 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
                                 {item.try_next && (
                                   <p className="text-xs text-ocean-700 bg-white rounded px-2 py-1 border border-ocean-200">
                                     🎯 {item.try_next}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Positive Feedback - Green */}
+                          {item.type === 'positive_feedback' && (
+                            <div className="bg-green-50 rounded-md p-3 border border-green-200">
+                              <p className="text-xs font-semibold text-green-700 mb-2">✓ What&apos;s Working</p>
+                              <div className="space-y-2 text-sm">
+                                {item.example && <p className="text-ocean-700">&quot;{item.example}&quot;</p>}
+                                <p className="text-green-800 font-medium">{item.strength}</p>
+                                {item.keep_doing && (
+                                  <p className="text-xs text-green-700 bg-white rounded px-2 py-1 border border-green-200">
+                                    → {item.keep_doing}
                                   </p>
                                 )}
                               </div>
@@ -377,10 +397,11 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
                           )}
 
                           {/* Improvements - Ocean Blue */}
-                          {(item.type === 'transition_missing' || item.type === 'sentence_connection') && (
+                          {(item.type === 'transition_missing' || item.type === 'sentence_connection' || item.type === 'transition_suggestion' || item.type === 'paragraphing_suggestion') && (
                             <div className="bg-ocean-50 rounded-md p-3 border border-ocean-200">
                               <p className="text-xs font-semibold text-ocean-700 mb-2">
-                                {item.type === 'transition_missing' ? '→ Add Transition' : '→ Smoother Connection'}
+                                {item.type === 'transition_missing' || item.type === 'transition_suggestion' ? '→ Add Transition' :
+                                 item.type === 'paragraphing_suggestion' ? '→ Strengthen Paragraph' : '→ Smoother Connection'}
                               </p>
                               <div className="space-y-2 text-sm">
                                 {item.location && <p className="text-xs text-ocean-600">{item.location}</p>}

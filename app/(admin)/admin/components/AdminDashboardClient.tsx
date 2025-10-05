@@ -21,6 +21,8 @@ import { format } from 'date-fns'
 
 interface AdminStats {
   totalUsers: number
+  ptnkUsers: number
+  paidProUsers: number
   totalEssays: number
   totalInputTokens: number
   totalOutputTokens: number
@@ -98,9 +100,9 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     }, [])
     .slice(-10)
 
-  // Prepare score distribution data
-  const scoreDistributionData = [5, 6, 7, 8, 9].map((score) => ({
-    score: `Band ${score}`,
+  // Prepare score distribution data (Band 8-9 merged)
+  const scoreDistributionData = [5, 6, 7, 8].map((score) => ({
+    score: score === 8 ? 'Band 8-9' : `Band ${score}`,
     count: stats.scoreDistribution[score] || 0,
   }))
 
@@ -172,7 +174,14 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
             <div className="text-3xl font-bold bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
               {formatNumber(stats.totalUsers)}
             </div>
-            <p className="text-xs text-ocean-600 mt-1">Registered accounts</p>
+            <div className="flex gap-3 mt-2">
+              <p className="text-xs text-green-600">
+                <span className="font-semibold">{stats.ptnkUsers}</span> PTNK
+              </p>
+              <p className="text-xs text-orange-600">
+                <span className="font-semibold">{stats.paidProUsers}</span> Paid Pro
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -250,7 +259,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-emerald-700">
-              Words Learned
+              Quiz Performance
             </CardTitle>
             <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 p-2 shadow-md">
               <Award className="h-5 w-5 text-white" />
@@ -258,18 +267,23 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalCorrectAnswers)}
+              {stats.avgQuizScore}%
             </div>
-            <p className="text-xs text-emerald-600 mt-1">
-              of {formatNumber(stats.totalQuestions)} tested ({stats.avgQuizScore}%)
-            </p>
+            <div className="flex gap-3 mt-2">
+              <p className="text-xs text-green-600">
+                Paraphrase: <span className="font-semibold">{stats.avgParaphraseScore}%</span>
+              </p>
+              <p className="text-xs text-teal-600">
+                Topic: <span className="font-semibold">{stats.avgTopicScore}%</span>
+              </p>
+            </div>
           </CardContent>
         </Card>
 
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-green-700">
-              Paraphrase Score
+              Total Quiz Attempts
             </CardTitle>
             <div className="rounded-lg bg-gradient-to-br from-green-500 to-lime-600 p-2 shadow-md">
               <Brain className="h-5 w-5 text-white" />
@@ -277,26 +291,11 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold bg-gradient-to-r from-green-700 to-lime-700 bg-clip-text text-transparent">
-              {stats.avgParaphraseScore}%
+              {formatNumber(stats.totalQuizAttempts)}
             </div>
-            <p className="text-xs text-green-600 mt-1">Average accuracy</p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-lime-700">
-              Topic Score
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-lime-500 to-yellow-600 p-2 shadow-md">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-lime-700 to-yellow-700 bg-clip-text text-transparent">
-              {stats.avgTopicScore}%
-            </div>
-            <p className="text-xs text-lime-600 mt-1">Average accuracy</p>
+            <p className="text-xs text-green-600 mt-1">
+              {formatNumber(stats.totalCorrectAnswers)} correct / {formatNumber(stats.totalQuestions)} total
+            </p>
           </CardContent>
         </Card>
       </div>

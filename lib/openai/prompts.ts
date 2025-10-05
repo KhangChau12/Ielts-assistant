@@ -347,6 +347,11 @@ Provide detailed, personal guidance in these areas:
 
 # OUTPUT JSON FORMAT
 
+IMPORTANT: Use ONLY these exact type values:
+- Grammar: "sentence_combining", "error_correction", "variety_suggestion", "positive_feedback"
+- Coherence: "transition_missing", "sentence_connection", "positive_feedback"
+- Task: "underdeveloped_idea", "missing_element", "positive_feedback"
+
 {
   "grammar_improvements": [
     {

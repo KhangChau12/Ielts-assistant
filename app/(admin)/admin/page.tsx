@@ -5,6 +5,8 @@ import { AdminDashboardClient } from './components/AdminDashboardClient'
 
 interface AdminStats {
   totalUsers: number
+  ptnkUsers: number
+  paidProUsers: number
   totalEssays: number
   totalInputTokens: number
   totalOutputTokens: number
@@ -57,6 +59,8 @@ async function getAdminStats(): Promise<AdminStats> {
     console.error('Error fetching admin stats:', error)
     return {
       totalUsers: 0,
+      ptnkUsers: 0,
+      paidProUsers: 0,
       totalEssays: 0,
       totalInputTokens: 0,
       totalOutputTokens: 0,
