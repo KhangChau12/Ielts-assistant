@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openai, MODELS } from '@/lib/openai/client'
+import { createGroqClient, MODELS } from '@/lib/openai/client'
 import { ERROR_SUMMARY_PROMPT } from '@/lib/openai/prompts'
 import type { ErrorSummary } from '@/types/user'
 
@@ -51,8 +51,9 @@ export async function POST() {
       )
     }
 
-    // Call OpenAI to summarize errors
-    const completion = await openai.chat.completions.create({
+    // Call Groq to summarize errors (with key rotation)
+    const groqClient = createGroqClient()
+    const completion = await groqClient.chat.completions.create({
       model: MODELS.ERROR_SUMMARY,
       messages: [
         {

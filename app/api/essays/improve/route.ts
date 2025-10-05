@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { openai, MODELS } from '@/lib/openai/client'
+import { createGroqClient, MODELS } from '@/lib/openai/client'
 import { ESSAY_IMPROVEMENT_PROMPT } from '@/lib/openai/prompts'
 
 export async function POST(request: Request) {
@@ -50,8 +50,9 @@ export async function POST(request: Request) {
       })
     }
 
-    // Call OpenAI to improve the essay
-    const completion = await openai.chat.completions.create({
+    // Call Groq to improve the essay (with key rotation)
+    const groqClient = createGroqClient()
+    const completion = await groqClient.chat.completions.create({
       model: MODELS.ESSAY_IMPROVEMENT,
       messages: [
         {

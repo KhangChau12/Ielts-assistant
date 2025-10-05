@@ -12,6 +12,7 @@ import {
 import { AlertCircle, CheckCircle2, FileText, BookOpen, Sparkles } from 'lucide-react'
 import { EssayImprovement } from './components/EssayImprovement'
 import { VocabGenerateButtons } from './components/VocabGenerateButtons'
+import { DetailedGuidance } from './components/DetailedGuidance'
 
 interface CriterionData {
   name: string
@@ -295,6 +296,15 @@ export default async function EssayResultsPage({
           originalEssay={essay.essay_content}
           initialImprovedEssay={essay.improved_essay}
           initialChanges={essay.improvement_changes}
+        />
+      </div>
+
+      {/* Detailed Guidance Section */}
+      <div className="mb-8">
+        <DetailedGuidance
+          essayId={params.essayId}
+          hasImprovedEssay={!!essay.improved_essay}
+          initialGuidance={essay.detailed_guidance}
         />
       </div>
 

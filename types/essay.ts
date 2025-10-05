@@ -40,6 +40,72 @@ export interface ImprovementChange {
   reason: string
 }
 
+export interface GrammarImprovement {
+  type: 'sentence_combining' | 'error_correction' | 'variety_suggestion'
+  original?: string
+  improved?: string
+  explanation?: string
+  impact?: string
+  location?: string
+  error?: string
+  correction?: string
+  rule?: string
+  severity?: 'MAJOR' | 'MINOR'
+  observation?: string
+  missing_structures?: string[]
+  try_next?: string
+}
+
+export interface CoherenceImprovement {
+  type: 'transition_missing' | 'positive_feedback' | 'sentence_connection'
+  location?: string
+  issue?: string
+  suggestion?: string
+  impact?: string
+  strength?: string
+  keep_doing?: string
+  current?: string
+  smoother?: string
+  why?: string
+}
+
+export interface TaskResponseDepth {
+  type: 'underdeveloped_idea' | 'missing_element' | 'positive_feedback'
+  location?: string
+  idea?: string
+  issue?: string
+  how_to_develop?: string
+  why_important?: string
+  requirement?: string
+  missing?: string
+  fix?: string
+  impact?: string
+  strength?: string
+  evidence?: string
+  keep_doing?: string
+}
+
+export interface OverallAssessment {
+  first_impression: string
+  strongest_aspect: string
+  maintain_this: string
+  priority_fixes: string[]
+  next_essay_goals: {
+    grammar?: string
+    structure?: string
+    task?: string
+    vocabulary?: string
+  }
+  encouragement: string
+}
+
+export interface DetailedGuidance {
+  grammar_improvements?: GrammarImprovement[]
+  coherence_improvements?: CoherenceImprovement[]
+  task_response_depth?: TaskResponseDepth[]
+  overall_assessment?: OverallAssessment
+}
+
 export interface Essay {
   id: string
   user_id: string
@@ -64,5 +130,6 @@ export interface Essay {
   grammatical_accuracy_strengths: string[] | null
   improved_essay: string | null
   improvement_changes: ImprovementChange[] | null
+  detailed_guidance: DetailedGuidance | null
   created_at: string
 }
