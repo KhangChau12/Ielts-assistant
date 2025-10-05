@@ -6,16 +6,14 @@ export function Footer() {
           <div className="text-center text-sm text-slate-600 md:text-left">
             <p>&copy; {new Date().getFullYear()} IELTS Assistant. All rights reserved.</p>
           </div>
-          <div className="flex space-x-6 text-sm text-slate-600">
-            <a href="#" className="hover:text-ocean-600 transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-ocean-600 transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-ocean-600 transition-colors">
-              Contact
-            </a>
+          <div className="text-sm text-slate-600">
+            <p>
+              Contact{' '}
+              <a href="mailto:phuckhangtdn@gmail.com" className="text-ocean-600 hover:text-ocean-700 transition-colors">
+                phuckhangtdn@gmail.com
+              </a>
+              {' '}if you need further discussion
+            </p>
           </div>
         </div>
       </div>

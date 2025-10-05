@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { Loader2, CheckCircle, Clock } from 'lucide-react'
+import { Loader2, CheckCircle, Clock, Crown } from 'lucide-react'
+import Link from 'next/link'
+import { QuotaDisplay } from '@/components/QuotaDisplay'
 
 export default function WritePage() {
   const router = useRouter()
@@ -17,6 +19,7 @@ export default function WritePage() {
   const [error, setError] = useState('')
   const [progress, setProgress] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const [showUpgradeButton, setShowUpgradeButton] = useState(false)
 
   // Timer for elapsed time
   useEffect(() => {
@@ -74,6 +77,7 @@ export default function WritePage() {
       const data = await response.json()
 
       if (!response.ok) {
+        setShowUpgradeButton(data.showUpgradeButton || false)
         throw new Error(data.error || 'Failed to submit essay')
       }
 
@@ -97,9 +101,12 @@ export default function WritePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-ocean-800 mb-2">Write Your Essay</h1>
-        <p className="text-ocean-600">Submit your IELTS Task 2 essay for AI-powered scoring and feedback</p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold text-ocean-800 mb-2">Write Your Essay</h1>
+          <p className="text-ocean-600">Submit your IELTS Task 2 essay for AI-powered scoring and feedback</p>
+        </div>
+        <QuotaDisplay />
       </div>
 
       <Card className="border-ocean-200 shadow-lg">
@@ -158,8 +165,19 @@ export default function WritePage() {
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-md space-y-3">
                 <p className="text-sm text-red-800">{error}</p>
+                {showUpgradeButton && (
+                  <Link href="/subscription">
+                    <Button
+                      type="button"
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white w-full"
+                    >
+                      <Crown className="mr-2 h-4 w-4" />
+                      Learn More About Pro
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
 

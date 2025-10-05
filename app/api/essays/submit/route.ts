@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createGroqClient, MODELS } from '@/lib/openai/client'
 import { ESSAY_SCORING_SYSTEM_PROMPT } from '@/lib/openai/prompts'
 import type { EssayScoringResponse } from '@/types/essay'
+import { getDailyQuota, getUserTier, getTotalQuota, getQuotaExhaustedMessage } from '@/lib/user/quota'
 
 export async function POST(request: Request) {
   try {
@@ -18,14 +19,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Ensure profile exists for user
-    const { data: existingProfile, error: profileCheckError } = await supabase
+    // Ensure profile exists and get quota info
+    const { data: profile, error: profileCheckError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, email, daily_essays_count, last_reset_date, total_essays_count')
       .eq('id', user.id)
       .single()
 
-    if (!existingProfile && !profileCheckError) {
+    if (!profile && !profileCheckError) {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase.from('profiles').insert({
         id: user.id,
@@ -36,6 +37,52 @@ export async function POST(request: Request) {
       if (insertError) {
         console.error('Failed to create profile:', insertError)
       }
+    }
+
+    // Check quotas before processing
+    const today = new Date().toISOString().split('T')[0]
+    let dailyCount = profile?.daily_essays_count || 0
+    const totalCount = profile?.total_essays_count || 0
+
+    // Reset counter if it's a new day
+    if (profile && profile.last_reset_date !== today) {
+      dailyCount = 0
+      await supabase
+        .from('profiles')
+        .update({
+          daily_essays_count: 0,
+          last_reset_date: today
+        })
+        .eq('id', user.id)
+    }
+
+    const userEmail = profile?.email || user.email || ''
+    const dailyQuota = getDailyQuota(userEmail)
+    const totalQuota = getTotalQuota(userEmail)
+    const tier = getUserTier(userEmail)
+
+    // Check total quota for free users (9 essays max)
+    if (tier === 'free' && totalQuota !== null && totalCount >= totalQuota) {
+      const quotaInfo = getQuotaExhaustedMessage(tier, false) // Total limit hit
+      return NextResponse.json(
+        {
+          error: quotaInfo.message,
+          showUpgradeButton: quotaInfo.showUpgradeButton
+        },
+        { status: 429 }
+      )
+    }
+
+    // Check daily quota
+    if (dailyCount >= dailyQuota) {
+      const quotaInfo = getQuotaExhaustedMessage(tier, true) // Daily limit hit
+      return NextResponse.json(
+        {
+          error: quotaInfo.message,
+          showUpgradeButton: quotaInfo.showUpgradeButton
+        },
+        { status: 429 }
+      )
     }
 
     const { prompt, essay_content } = await request.json()
@@ -129,6 +176,15 @@ export async function POST(request: Request) {
       output_tokens: completion.usage?.completion_tokens || 0,
       model: MODELS.ESSAY_SCORING,
     })
+
+    // Increment daily and total essay counts
+    await supabase
+      .from('profiles')
+      .update({
+        daily_essays_count: dailyCount + 1,
+        total_essays_count: totalCount + 1
+      })
+      .eq('id', user.id)
 
     return NextResponse.json({ success: true, essay })
   } catch (error) {

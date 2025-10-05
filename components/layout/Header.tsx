@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Home, FileText, BookOpen, User, LogOut, Settings, History } from 'lucide-react'
+import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -111,6 +111,13 @@ export function Header({ user }: HeaderProps) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem className="text-sm text-slate-600">
                   {user.role === 'admin' ? 'Administrator' : 'Student'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/subscription" className="cursor-pointer">
+                    <Crown className="mr-2 h-4 w-4" />
+                    Subscription
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
