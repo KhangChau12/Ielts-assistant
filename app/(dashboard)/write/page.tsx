@@ -10,6 +10,11 @@ import { Progress } from '@/components/ui/progress'
 import { Loader2, CheckCircle, Clock, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { QuotaDisplay } from '@/components/QuotaDisplay'
+import { createClient } from '@/lib/supabase/client'
+import { checkGuestUsage, markGuestUsed } from '@/lib/guest-tracking'
+import { getDeviceFingerprint } from '@/lib/fingerprint'
+import { GuestLimitModal } from '@/components/guest/GuestLimitModal'
+import { GuestBanner } from '@/components/guest/GuestBanner'
 
 export default function WritePage() {
   const router = useRouter()
@@ -20,6 +25,35 @@ export default function WritePage() {
   const [progress, setProgress] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [showUpgradeButton, setShowUpgradeButton] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
+  const [showGuestLimit, setShowGuestLimit] = useState(false)
+  const [existingEssayId, setExistingEssayId] = useState<string>()
+  const [fingerprint, setFingerprint] = useState<string>('')
+
+  // Check if user is guest and if they've used their trial
+  useEffect(() => {
+    async function checkAuth() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        setIsGuest(true)
+
+        // Get fingerprint
+        const fp = await getDeviceFingerprint()
+        setFingerprint(fp)
+
+        // Check if guest already used trial
+        const guestCheck = await checkGuestUsage()
+        if (guestCheck.hasUsed) {
+          setShowGuestLimit(true)
+          setExistingEssayId(guestCheck.essayId)
+        }
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   // Timer for elapsed time
   useEffect(() => {
@@ -71,17 +105,32 @@ export default function WritePage() {
         body: JSON.stringify({
           prompt: prompt.trim(),
           essay_content: essay.trim(),
+          fingerprint: isGuest ? fingerprint : undefined,
         }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
+        // Check if it's a guest limit error
+        if (data.isGuestLimit) {
+          setShowGuestLimit(true)
+          setExistingEssayId(data.existingEssayId)
+          setIsSubmitting(false)
+          setProgress(0)
+          return
+        }
+
         setShowUpgradeButton(data.showUpgradeButton || false)
         throw new Error(data.error || 'Failed to submit essay')
       }
 
       if (data.success && data.essay?.id) {
+        // Mark guest as used if applicable
+        if (data.isGuest) {
+          await markGuestUsed(data.essay.id)
+        }
+
         setProgress(100)
         setTimeout(() => {
           router.push(`/write/${data.essay.id}`)
@@ -101,12 +150,15 @@ export default function WritePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Guest Banner */}
+      {isGuest && !showGuestLimit && <GuestBanner />}
+
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-ocean-800 mb-2">Write Your Essay</h1>
           <p className="text-ocean-600">Submit your IELTS Task 2 essay for AI-powered scoring and feedback</p>
         </div>
-        <QuotaDisplay />
+        {!isGuest && <QuotaDisplay />}
       </div>
 
       <Card className="border-ocean-200 shadow-lg">
@@ -288,6 +340,13 @@ export default function WritePage() {
           </li>
         </ul>
       </div>
+
+      {/* Guest Limit Modal */}
+      <GuestLimitModal
+        open={showGuestLimit}
+        onOpenChange={setShowGuestLimit}
+        existingEssayId={existingEssayId}
+      />
     </div>
   )
 }

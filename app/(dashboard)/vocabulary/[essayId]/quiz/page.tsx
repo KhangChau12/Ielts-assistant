@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, CheckCircle, XCircle, BrainCircuit } from 'lucide-react'
 import Link from 'next/link'
 import type { VocabularyItem } from '@/types/vocabulary'
+import { saveGuestQuizResult } from '@/lib/guest-vocabulary'
 
 interface QuizQuestion {
   id: string
@@ -176,7 +177,7 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
 
         // Save paraphrase results if any
         if (paraphraseResults.total > 0) {
-          await fetch('/api/vocabulary/quiz-results', {
+          const response = await fetch('/api/vocabulary/quiz-results', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -191,11 +192,26 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
               incorrect_answers: paraphraseResults.incorrect,
             }),
           })
+
+          const data = await response.json()
+
+          // If guest, save to localStorage
+          if (data.isGuest) {
+            saveGuestQuizResult({
+              essay_id: params.essayId,
+              vocab_type: 'paraphrase',
+              score: paraphraseResults.correct.length,
+              total_questions: paraphraseResults.total,
+              correct_answers: paraphraseResults.correct.map((_, i) => i),
+              incorrect_answers: paraphraseResults.incorrect.map((_, i) => i),
+              completed_at: new Date().toISOString(),
+            })
+          }
         }
 
         // Save topic results if any
         if (topicResults.total > 0) {
-          await fetch('/api/vocabulary/quiz-results', {
+          const response = await fetch('/api/vocabulary/quiz-results', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -210,6 +226,21 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
               incorrect_answers: topicResults.incorrect,
             }),
           })
+
+          const data = await response.json()
+
+          // If guest, save to localStorage
+          if (data.isGuest) {
+            saveGuestQuizResult({
+              essay_id: params.essayId,
+              vocab_type: 'topic',
+              score: topicResults.correct.length,
+              total_questions: topicResults.total,
+              correct_answers: topicResults.correct.map((_, i) => i),
+              incorrect_answers: topicResults.incorrect.map((_, i) => i),
+              completed_at: new Date().toISOString(),
+            })
+          }
         }
       } else {
         // Single vocab type quiz - save as before
@@ -229,7 +260,22 @@ export default function QuizPage({ params }: { params: { essayId: string } }) {
           }),
         })
 
-        if (!response.ok) {
+        if (response.ok) {
+          const data = await response.json()
+
+          // If guest, save to localStorage
+          if (data.isGuest) {
+            saveGuestQuizResult({
+              essay_id: params.essayId,
+              vocab_type: vocabType as 'paraphrase' | 'topic',
+              score,
+              total_questions: total,
+              correct_answers: correctAnswers.map((_, i) => i),
+              incorrect_answers: incorrectAnswers.map((_, i) => i),
+              completed_at: new Date().toISOString(),
+            })
+          }
+        } else {
           console.error('Failed to save quiz results')
         }
       }

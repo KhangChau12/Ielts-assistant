@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { Sparkles, CheckCircle, BookOpen } from 'lucide-react'
+import { Sparkles, CheckCircle, BookOpen, GraduationCap, BarChart3, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 interface VocabGenerateButtonsProps {
   essayId: string
@@ -25,6 +27,16 @@ export function VocabGenerateButtons({
   const [hasParaphrase, setHasParaphrase] = useState(initialHasParaphrase)
   const [hasTopic, setHasTopic] = useState(initialHasTopic)
   const [error, setError] = useState('')
+  const [isGuest, setIsGuest] = useState(false)
+
+  useEffect(() => {
+    async function checkAuth() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsGuest(!user)
+    }
+    checkAuth()
+  }, [])
 
   const generateParaphrase = async () => {
     setIsGeneratingParaphrase(true)
@@ -110,6 +122,59 @@ export function VocabGenerateButtons({
     }
   }
 
+  // Guest mode: Show signup prompt instead of generate buttons
+  if (isGuest) {
+    return (
+      <div className="space-y-4">
+        {/* Main signup message */}
+        <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-lg p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <GraduationCap className="h-6 w-6 text-cyan-600 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-ocean-800 text-lg mb-2">
+                Sign Up FREE to Unlock Advanced Vocabulary Features
+              </h3>
+              <p className="text-ocean-700 text-sm leading-relaxed mb-3">
+                Generate <strong>C1-C2 level vocabulary</strong> to paraphrase words from your essay and discover <strong>fancy topic-specific vocabulary</strong> for higher Lexical Resource scores.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature highlights */}
+          <div className="space-y-2 mb-4 ml-9">
+            <div className="flex items-center gap-2 text-sm text-ocean-700">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>AI-powered vocabulary suggestions tailored to your essay</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-ocean-700">
+              <Zap className="h-4 w-4 text-blue-500" />
+              <span>Create flashcards & take quizzes to master new vocabulary</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-ocean-700">
+              <BarChart3 className="h-4 w-4 text-green-500" />
+              <span>Track your writing progress & vocabulary growth in Dashboard</span>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <Link href="/login" className="block ml-9">
+            <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
+              <GraduationCap className="h-4 w-4 mr-2" />
+              Sign Up FREE - Get 3 Essays/Day
+            </Button>
+          </Link>
+        </div>
+
+        {/* Additional benefits note */}
+        <div className="text-xs text-ocean-600 bg-ocean-50 border border-ocean-200 rounded-md p-3">
+          <p className="font-medium mb-1">📚 Free tier includes:</p>
+          <p>✓ 3 essays per day • ✓ Full scoring & feedback • ✓ Vocabulary tools • ✓ Progress tracking</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Authenticated user: Show normal generate buttons
   return (
     <div className="space-y-4">
       {error && (

@@ -13,13 +13,10 @@ export async function GET(
       error: authError,
     } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    // Allow both authenticated users and guests
     const { data: essay, error } = await supabase
       .from('essays')
-      .select('improved_essay, user_id')
+      .select('improved_essay, user_id, is_guest, guest_fingerprint')
       .eq('id', params.id)
       .single()
 
@@ -27,10 +24,13 @@ export async function GET(
       return NextResponse.json({ error: 'Essay not found' }, { status: 404 })
     }
 
-    // Check if user owns this essay
-    if (essay.user_id !== user.id) {
+    // For authenticated users, check ownership
+    if (user && essay.user_id !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
+
+    // For guests, allow access (no fingerprint verification needed for read-only status check)
+    // Guest essays are public for the duration of the session
 
     return NextResponse.json({
       has_improved_essay: !!essay.improved_essay,

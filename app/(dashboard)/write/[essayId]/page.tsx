@@ -13,6 +13,7 @@ import { AlertCircle, CheckCircle2, FileText, BookOpen, Sparkles } from 'lucide-
 import { EssayImprovement } from './components/EssayImprovement'
 import { VocabGenerateButtons } from './components/VocabGenerateButtons'
 import { DetailedGuidance } from './components/DetailedGuidance'
+import { GuestBanner } from '@/components/guest/GuestBanner'
 
 interface CriterionData {
   name: string
@@ -132,12 +133,8 @@ export default async function EssayResultsPage({
   const supabase = createServerClient()
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { data: essay, error } = await supabase
     .from('essays')
@@ -149,12 +146,21 @@ export default async function EssayResultsPage({
     redirect('/write')
   }
 
-  // Check if user owns this essay
-  if (essay.user_id !== session.user.id) {
+  const isGuest = essay.is_guest === true
+
+  // Allow access if:
+  // 1. Guest essay (is_guest = true)
+  // 2. User owns the essay
+  // 3. User is admin
+  if (!isGuest && essay.user_id !== user?.id) {
+    if (!user) {
+      redirect('/login')
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     if (profile?.role !== 'admin') {
@@ -206,6 +212,9 @@ export default async function EssayResultsPage({
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* Guest Banner */}
+      {isGuest && <GuestBanner />}
+
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-ocean-800 mb-2">Essay Results</h1>
         <p className="text-ocean-600">Detailed scoring and feedback for your IELTS essay</p>

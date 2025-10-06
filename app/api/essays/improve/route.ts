@@ -7,15 +7,11 @@ export async function POST(request: Request) {
   try {
     const supabase = createServerClient()
 
-    // Check authentication
+    // Check authentication (allow both users and guests)
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const { essay_id } = await request.json()
 
@@ -26,13 +22,21 @@ export async function POST(request: Request) {
       )
     }
 
-    // Fetch the essay
-    const { data: essay, error: essayError } = await supabase
+    // Fetch the essay (allow both authenticated and guest essays)
+    let essayQuery = supabase
       .from('essays')
       .select('*')
       .eq('id', essay_id)
-      .eq('user_id', user.id)
-      .single()
+
+    // If authenticated, check user ownership
+    if (user) {
+      essayQuery = essayQuery.eq('user_id', user.id)
+    } else {
+      // If guest, allow access to guest essays
+      essayQuery = essayQuery.eq('is_guest', true)
+    }
+
+    const { data: essay, error: essayError } = await essayQuery.single()
 
     if (essayError || !essay) {
       return NextResponse.json(
@@ -120,14 +124,16 @@ export async function POST(request: Request) {
     }
     console.log('=============================')
 
-    // Log token usage
-    await supabase.from('token_usage').insert({
-      user_id: user.id,
-      request_type: 'improvement',
-      input_tokens: completion.usage?.prompt_tokens || 0,
-      output_tokens: completion.usage?.completion_tokens || 0,
-      model: MODELS.ESSAY_IMPROVEMENT,
-    })
+    // Log token usage (only for authenticated users)
+    if (user) {
+      await supabase.from('token_usage').insert({
+        user_id: user.id,
+        request_type: 'improvement',
+        input_tokens: completion.usage?.prompt_tokens || 0,
+        output_tokens: completion.usage?.completion_tokens || 0,
+        model: MODELS.ESSAY_IMPROVEMENT,
+      })
+    }
 
     return NextResponse.json({
       success: true,

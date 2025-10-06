@@ -13,20 +13,21 @@ export async function GET(
       error: authError,
     } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get the essay first
     const { data: essay, error: essayError } = await supabase
       .from('essays')
       .select('*')
       .eq('id', params.essayId)
-      .eq('user_id', user.id)
       .single()
 
     if (essayError || !essay) {
       return NextResponse.json({ error: 'Essay not found' }, { status: 404 })
+    }
+
+    // Check access: allow if guest essay OR user owns it
+    const isGuest = essay.is_guest === true
+    if (!isGuest && essay.user_id !== user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     // Get type from query params
@@ -38,7 +39,11 @@ export async function GET(
       .from('vocabulary')
       .select('*')
       .eq('essay_id', params.essayId)
-      .eq('user_id', user.id)
+
+    // Filter by user_id only if not guest
+    if (!isGuest && user) {
+      query = query.eq('user_id', user.id)
+    }
 
     // Filter by type if specified and not 'both' or 'mixed'
     if (type && type !== 'both' && type !== 'mixed') {
@@ -55,8 +60,8 @@ export async function GET(
       )
     }
 
-    // Track views if type is specified
-    if (type) {
+    // Track views if type is specified (only for authenticated users, not guests)
+    if (type && user && !isGuest) {
       const viewsToInsert = []
       const paraphraseVocab = vocabulary?.filter(v => v.vocab_type === 'paraphrase') || []
       const topicVocab = vocabulary?.filter(v => v.vocab_type === 'topic') || []

@@ -10,10 +10,6 @@ export async function POST(request: Request) {
       error: authError,
     } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { essay_id, vocab_type, score, total_questions, correct_answers, incorrect_answers } =
       await request.json()
 
@@ -24,7 +20,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // Insert quiz attempt into database
+    // For guests, return success and let client save to localStorage
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        isGuest: true,
+        message: 'Guest quiz completed - save to localStorage',
+      })
+    }
+
+    // Insert quiz attempt into database for authenticated users
     const { data, error } = await supabase
       .from('vocabulary_quiz_attempts')
       .insert({

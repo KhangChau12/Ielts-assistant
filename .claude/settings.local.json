@@ -10,7 +10,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx shadcn-ui:*)"
     ],
     "deny": [],
     "ask": []

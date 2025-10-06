@@ -10,6 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -46,17 +52,40 @@ export function Header({ user }: HeaderProps) {
         </Link>
 
         {/* Navigation */}
-        {user && (
+        <TooltipProvider>
           <nav className="flex items-center space-x-1">
-            <Link href="/dashboard">
-              <Button
-                variant={isActive('/dashboard') ? 'secondary' : 'ghost'}
-                className={isActive('/dashboard') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-            </Link>
+            {/* Dashboard - Show for all, tooltip for guests */}
+            {user ? (
+              <Link href="/dashboard">
+                <Button
+                  variant={isActive('/dashboard') ? 'secondary' : 'ghost'}
+                  className={isActive('/dashboard') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      className="text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                      disabled
+                    >
+                      <Home className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">Sign up to access Dashboard & track your progress</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Write Essay - Always accessible */}
             <Link href="/write">
               <Button
                 variant={isActive('/write') ? 'secondary' : 'ghost'}
@@ -66,25 +95,71 @@ export function Header({ user }: HeaderProps) {
                 Write Essay
               </Button>
             </Link>
-            <Link href="/history">
-              <Button
-                variant={isActive('/history') ? 'secondary' : 'ghost'}
-                className={isActive('/history') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
-              >
-                <History className="mr-2 h-4 w-4" />
-                History
-              </Button>
-            </Link>
-            <Link href="/vocabulary">
-              <Button
-                variant={isActive('/vocabulary') ? 'secondary' : 'ghost'}
-                className={isActive('/vocabulary') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                Vocabulary
-              </Button>
-            </Link>
-            {user.role === 'admin' && (
+
+            {/* History - Show for all, tooltip for guests */}
+            {user ? (
+              <Link href="/history">
+                <Button
+                  variant={isActive('/history') ? 'secondary' : 'ghost'}
+                  className={isActive('/history') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
+                >
+                  <History className="mr-2 h-4 w-4" />
+                  History
+                </Button>
+              </Link>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      className="text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                      disabled
+                    >
+                      <History className="mr-2 h-4 w-4" />
+                      History
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">Sign up to access History & review past essays</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Vocabulary - Show for all, tooltip for guests */}
+            {user ? (
+              <Link href="/vocabulary">
+                <Button
+                  variant={isActive('/vocabulary') ? 'secondary' : 'ghost'}
+                  className={isActive('/vocabulary') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Vocabulary
+                </Button>
+              </Link>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      className="text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                      disabled
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Vocabulary
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-sm">Sign up to access your Vocabulary collection</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Admin - Show for admin only */}
+            {user?.role === 'admin' && (
               <Link href="/admin">
                 <Button
                   variant={isActive('/admin') ? 'secondary' : 'ghost'}
@@ -96,7 +171,7 @@ export function Header({ user }: HeaderProps) {
               </Link>
             )}
           </nav>
-        )}
+        </TooltipProvider>
 
         {/* User Menu or Auth Buttons */}
         <div className="flex items-center space-x-2">

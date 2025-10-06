@@ -9,16 +9,129 @@ export async function POST(request: Request) {
   try {
     const supabase = createServerClient()
 
-    // Check authentication
+    // Check authentication (allow guest mode)
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const isGuest = !user
+
+    // GUEST MODE HANDLING
+    if (isGuest) {
+      const body = await request.json()
+      const { prompt, essay_content, fingerprint } = body
+
+      if (!fingerprint || fingerprint === 'server-side') {
+        return NextResponse.json(
+          { error: 'Device fingerprint required for guest mode' },
+          { status: 400 }
+        )
+      }
+
+      // Check if guest already used their trial
+      const { data: existingGuest } = await supabase
+        .from('guest_fingerprints')
+        .select('essay_id')
+        .eq('fingerprint', fingerprint)
+        .single()
+
+      if (existingGuest) {
+        return NextResponse.json(
+          {
+            error: 'You\'ve already tried 1 free essay! Sign up to get 3 essays per day.',
+            isGuestLimit: true,
+            existingEssayId: existingGuest.essay_id
+          },
+          { status: 429 }
+        )
+      }
+
+      if (!prompt || !essay_content) {
+        return NextResponse.json(
+          { error: 'Prompt and essay content are required' },
+          { status: 400 }
+        )
+      }
+
+      // Process guest essay (scoring logic below)
+      // Continue to scoring...
+      const groqClient = createGroqClient()
+      const completion = await groqClient.chat.completions.create({
+        model: MODELS.ESSAY_SCORING,
+        messages: [
+          {
+            role: 'system',
+            content: ESSAY_SCORING_SYSTEM_PROMPT,
+          },
+          {
+            role: 'user',
+            content: `Essay Prompt: ${prompt}\n\nStudent's Essay:\n${essay_content}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.3,
+      })
+
+      const scoringResult: EssayScoringResponse = JSON.parse(
+        completion.choices[0].message.content || '{}'
+      )
+
+      const roundToHalfBand = (score: number): number => {
+        const rounded = Math.round(score * 2) / 2
+        return Math.max(0, Math.min(9, rounded))
+      }
+
+      const finalOverallScore = roundToHalfBand(scoringResult.overall_score)
+
+      // Save guest essay to database
+      const { data: essay, error: essayError } = await supabase
+        .from('essays')
+        .insert({
+          user_id: null,
+          is_guest: true,
+          guest_fingerprint: fingerprint,
+          prompt,
+          essay_content,
+          overall_score: finalOverallScore,
+          task_response_score: scoringResult.scores.task_response,
+          coherence_cohesion_score: scoringResult.scores.coherence_cohesion,
+          lexical_resource_score: scoringResult.scores.lexical_resource,
+          grammatical_accuracy_score: scoringResult.scores.grammatical_accuracy,
+          task_response_comment: scoringResult.comments.task_response,
+          coherence_cohesion_comment: scoringResult.comments.coherence_cohesion,
+          lexical_resource_comment: scoringResult.comments.lexical_resource,
+          grammatical_accuracy_comment: scoringResult.comments.grammatical_accuracy,
+          task_response_errors: scoringResult.errors.task_response,
+          coherence_cohesion_errors: scoringResult.errors.coherence_cohesion,
+          lexical_resource_errors: scoringResult.errors.lexical_resource,
+          grammatical_accuracy_errors: scoringResult.errors.grammatical_accuracy,
+          task_response_strengths: scoringResult.strengths?.task_response || [],
+          coherence_cohesion_strengths: scoringResult.strengths?.coherence_cohesion || [],
+          lexical_resource_strengths: scoringResult.strengths?.lexical_resource || [],
+          grammatical_accuracy_strengths: scoringResult.strengths?.grammatical_accuracy || [],
+        })
+        .select()
+        .single()
+
+      if (essayError) {
+        console.error('Failed to save guest essay:', essayError)
+        return NextResponse.json(
+          { error: 'Failed to save essay', details: essayError.message },
+          { status: 500 }
+        )
+      }
+
+      // Mark guest fingerprint as used
+      await supabase.from('guest_fingerprints').insert({
+        fingerprint,
+        essay_id: essay.id
+      })
+
+      return NextResponse.json({ success: true, essay, isGuest: true })
     }
 
+    // AUTHENTICATED USER FLOW
     // Ensure profile exists and get quota info
     const { data: profile, error: profileCheckError } = await supabase
       .from('profiles')

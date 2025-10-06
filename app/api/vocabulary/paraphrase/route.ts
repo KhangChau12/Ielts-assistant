@@ -13,10 +13,6 @@ export async function POST(request: Request) {
       error: authError,
     } = await supabase.auth.getUser()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { essay_id } = await request.json()
 
     if (!essay_id) {
@@ -26,13 +22,19 @@ export async function POST(request: Request) {
       )
     }
 
-    // Fetch the essay
-    const { data: essay, error: essayError } = await supabase
+    // Fetch the essay (allow both authenticated and guest essays)
+    let essayQuery = supabase
       .from('essays')
-      .select('essay_content')
+      .select('essay_content, user_id, is_guest')
       .eq('id', essay_id)
-      .eq('user_id', user.id)
-      .single()
+
+    if (user) {
+      essayQuery = essayQuery.eq('user_id', user.id)
+    } else {
+      essayQuery = essayQuery.eq('is_guest', true)
+    }
+
+    const { data: essay, error: essayError } = await essayQuery.single()
 
     if (essayError || !essay) {
       return NextResponse.json({ error: 'Essay not found' }, { status: 404 })
@@ -66,39 +68,55 @@ export async function POST(request: Request) {
       completion.choices[0].message.content || '{"vocabulary":[]}'
     )
 
-    // Save vocabulary to database
-    const vocabItems = result.vocabulary.map((item) => ({
-      user_id: user.id,
-      essay_id,
-      vocab_type: 'paraphrase' as const,
-      original_word: item.original,
-      suggested_word: item.suggested,
-      definition: item.definition,
-    }))
+    // Save vocabulary to database (only for authenticated users)
+    if (user) {
+      const vocabItems = result.vocabulary.map((item) => ({
+        user_id: user.id,
+        essay_id,
+        vocab_type: 'paraphrase' as const,
+        original_word: item.original,
+        suggested_word: item.suggested,
+        definition: item.definition,
+      }))
 
-    const { data: savedVocab, error: vocabError } = await supabase
-      .from('vocabulary')
-      .insert(vocabItems)
-      .select()
+      const { data: savedVocab, error: vocabError } = await supabase
+        .from('vocabulary')
+        .insert(vocabItems)
+        .select()
 
-    if (vocabError) {
-      console.error('Error saving vocabulary:', vocabError)
-      return NextResponse.json(
-        { error: 'Failed to save vocabulary' },
-        { status: 500 }
-      )
+      if (vocabError) {
+        console.error('Error saving vocabulary:', vocabError)
+        return NextResponse.json(
+          { error: 'Failed to save vocabulary' },
+          { status: 500 }
+        )
+      }
+
+      // Log token usage
+      await supabase.from('token_usage').insert({
+        user_id: user.id,
+        request_type: 'vocab_paraphrase',
+        input_tokens: completion.usage?.prompt_tokens || 0,
+        output_tokens: completion.usage?.completion_tokens || 0,
+        model: MODELS.VOCABULARY,
+      })
+
+      return NextResponse.json({ success: true, vocabulary: savedVocab })
+    } else {
+      // For guests, return vocabulary without saving to database
+      const guestVocab = result.vocabulary.map((item, index) => ({
+        id: `guest-${essay_id}-paraphrase-${index}`,
+        essay_id,
+        vocab_type: 'paraphrase' as const,
+        original_word: item.original,
+        suggested_word: item.suggested,
+        definition: item.definition,
+        user_id: null,
+        created_at: new Date().toISOString(),
+      }))
+
+      return NextResponse.json({ success: true, vocabulary: guestVocab, isGuest: true })
     }
-
-    // Log token usage
-    await supabase.from('token_usage').insert({
-      user_id: user.id,
-      request_type: 'vocab_paraphrase',
-      input_tokens: completion.usage?.prompt_tokens || 0,
-      output_tokens: completion.usage?.completion_tokens || 0,
-      model: MODELS.VOCABULARY,
-    })
-
-    return NextResponse.json({ success: true, vocabulary: savedVocab })
   } catch (error) {
     console.error('Error generating paraphrase vocabulary:', error)
     return NextResponse.json(

@@ -2,8 +2,15 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, TrendingUp, BookOpen, Target, Sparkles, CheckCircle } from 'lucide-react'
+import { createServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -20,18 +27,23 @@ export default function HomePage() {
             <p className="mb-8 text-xl text-ocean-100">
               Get instant, expert-level feedback on your IELTS Writing Task 2 essays. Track your progress, enhance your vocabulary, and achieve your target band score.
             </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/register">
-                <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white">
-                  Get Started Free
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-ocean-900">
-                  Sign In
-                </Button>
-              </Link>
-            </div>
+
+            {/* Only show CTA button for guests */}
+            {!user && (
+              <>
+                <div className="flex justify-center">
+                  <Link href="/write">
+                    <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all px-10 py-6 text-xl font-bold">
+                      <Sparkles className="mr-2 h-6 w-6" />
+                      Try Scoring Your Essay FREE
+                    </Button>
+                  </Link>
+                </div>
+                <p className="mt-6 text-base text-ocean-100">
+                  No sign-up required • Get instant AI feedback in 30 seconds
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>
