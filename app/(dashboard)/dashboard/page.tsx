@@ -37,6 +37,13 @@ interface UserStats {
     lexical: { [key: number]: number }
     grammar: { [key: number]: number }
   }
+  criteriaOverTime: Array<{
+    essayNumber: number
+    taskResponse: number | null
+    coherence: number | null
+    vocabulary: number | null
+    grammar: number | null
+  }>
 }
 
 async function getDashboardData(userId: string) {
@@ -99,11 +106,14 @@ async function getUserStats(userId: string): Promise<UserStats> {
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
-    // Fetch user's essays with scores
+    // Fetch user's essays with scores ordered by created_at
     const { data: essays } = await supabase
       .from('essays')
-      .select('overall_score, task_response_score, coherence_cohesion_score, lexical_resource_score, grammatical_accuracy_score')
+      .select('overall_score, task_response_score, coherence_cohesion_score, lexical_resource_score, grammatical_accuracy_score, created_at')
       .eq('user_id', userId)
+      .order('created_at', { ascending: true })
+
+    console.log('[getUserStats] Essays with scores:', essays)
 
     // Calculate vocabulary stats
     const totalVocabulary = vocabulary?.length || 0
@@ -173,6 +183,17 @@ async function getUserStats(userId: string): Promise<UserStats> {
       }
     })
 
+    console.log('[getUserStats] Score distribution:', scoreDistribution)
+
+    // Prepare criteria over time data
+    const criteriaOverTime = essays?.map((essay, index) => ({
+      essayNumber: index + 1,
+      taskResponse: essay.task_response_score,
+      coherence: essay.coherence_cohesion_score,
+      vocabulary: essay.lexical_resource_score,
+      grammar: essay.grammatical_accuracy_score,
+    })) || []
+
     return {
       vocabulary: {
         total: totalVocabulary,
@@ -187,6 +208,7 @@ async function getUserStats(userId: string): Promise<UserStats> {
         avgTopicScore: Math.round(avgTopicScore * 10) / 10,
       },
       scoreDistribution,
+      criteriaOverTime,
     }
   } catch (error) {
     console.error('Error fetching user stats:', error)
@@ -207,6 +229,7 @@ async function getUserStats(userId: string): Promise<UserStats> {
         lexical: {},
         grammar: {},
       },
+      criteriaOverTime: [],
     }
   }
 }
@@ -215,10 +238,11 @@ export default async function DashboardPage() {
   const supabase = createServerClient()
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     redirect('/login')
   }
 
@@ -226,14 +250,14 @@ export default async function DashboardPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
 
-  const userName = profile?.full_name || session.user.email?.split('@')[0] || 'Student'
+  const userName = profile?.full_name || user.email?.split('@')[0] || 'Student'
 
   // Get dashboard data
-  const { essays, stats } = await getDashboardData(session.user.id)
-  const userStats = await getUserStats(session.user.id)
+  const { essays, stats } = await getDashboardData(user.id)
+  const userStats = await getUserStats(user.id)
 
   // Prepare data for charts
   const recentEssays = essays.slice(0, 5)
@@ -380,6 +404,7 @@ export default async function DashboardPage() {
       {stats.totalEssays > 0 && (
         <ScoreDistribution
           scoreDistribution={userStats.scoreDistribution}
+          criteriaOverTime={userStats.criteriaOverTime}
           hasEssays={stats.totalEssays > 0}
         />
       )}

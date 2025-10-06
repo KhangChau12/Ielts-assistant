@@ -89,15 +89,44 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
   const [guidance, setGuidance] = useState<DetailedGuidanceData | null>(initialGuidance || null)
   const [error, setError] = useState<string | null>(null)
   const [hasStarted, setHasStarted] = useState(!!initialGuidance)
+  const [improvedEssayExists, setImprovedEssayExists] = useState(hasImprovedEssay)
+
+  // Poll database to check if improved essay has been created
+  useEffect(() => {
+    if (improvedEssayExists || hasStarted || guidance) {
+      return // Don't poll if we already know improved essay exists or guidance is done/in progress
+    }
+
+    const checkImprovedEssay = async () => {
+      try {
+        const response = await fetch(`/api/essays/${essayId}/status`)
+        const data = await response.json()
+
+        if (data.has_improved_essay) {
+          setImprovedEssayExists(true)
+        }
+      } catch (err) {
+        console.error('Failed to check improved essay status:', err)
+      }
+    }
+
+    // Poll every 2 seconds
+    const interval = setInterval(checkImprovedEssay, 2000)
+
+    // Initial check
+    checkImprovedEssay()
+
+    return () => clearInterval(interval)
+  }, [essayId, improvedEssayExists, hasStarted, guidance])
 
   // Auto-generate when improved essay is ready (and guidance doesn't exist yet)
   useEffect(() => {
-    if (hasImprovedEssay && !hasStarted && !guidance) {
+    if (improvedEssayExists && !hasStarted && !guidance) {
       setHasStarted(true)
       generateGuidance()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasImprovedEssay])
+  }, [improvedEssayExists])
 
   useEffect(() => {
     // Simulate progress - 5 seconds total
@@ -146,7 +175,7 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
   }
 
   // Don't show if improved essay doesn't exist yet
-  if (!hasImprovedEssay) {
+  if (!improvedEssayExists) {
     return null
   }
 

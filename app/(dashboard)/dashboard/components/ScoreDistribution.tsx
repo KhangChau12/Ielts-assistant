@@ -2,7 +2,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart, Target } from 'lucide-react'
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import {
+  BarChart as RechartsBarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  Legend
+} from 'recharts'
 
 interface ScoreDistributionProps {
   scoreDistribution: {
@@ -12,11 +24,21 @@ interface ScoreDistributionProps {
     lexical: { [key: number]: number }
     grammar: { [key: number]: number }
   }
+  criteriaOverTime?: Array<{
+    essayNumber: number
+    taskResponse: number | null
+    coherence: number | null
+    vocabulary: number | null
+    grammar: number | null
+  }>
   hasEssays: boolean
 }
 
-export function ScoreDistribution({ scoreDistribution, hasEssays }: ScoreDistributionProps) {
+export function ScoreDistribution({ scoreDistribution, criteriaOverTime, hasEssays }: ScoreDistributionProps) {
+  console.log('[ScoreDistribution] Props received:', { scoreDistribution, criteriaOverTime, hasEssays })
+
   if (!hasEssays) {
+    console.log('[ScoreDistribution] No essays, returning null')
     return null // Don't show if no essays
   }
 
@@ -29,35 +51,19 @@ export function ScoreDistribution({ scoreDistribution, hasEssays }: ScoreDistrib
     }))
     .sort((a, b) => parseInt(a.band.split(' ')[1]) - parseInt(b.band.split(' ')[1]))
 
-  // Prepare criteria comparison data (average scores) - lighter pastel colors
-  const criteriaData = [
-    {
-      name: 'Task Response',
-      score: calculateAverage(scoreDistribution.taskResponse || {}),
-      fill: '#67e8f9', // cyan-300
-    },
-    {
-      name: 'Coherence',
-      score: calculateAverage(scoreDistribution.coherence || {}),
-      fill: '#7dd3fc', // sky-300
-    },
-    {
-      name: 'Vocabulary',
-      score: calculateAverage(scoreDistribution.lexical || {}),
-      fill: '#c4b5fd', // violet-300
-    },
-    {
-      name: 'Grammar',
-      score: calculateAverage(scoreDistribution.grammar || {}),
-      fill: '#93c5fd', // blue-300
-    },
-  ]
-
   const hasOverallData = overallData.length > 0
-  const hasCriteriaData = criteriaData.some(c => c.score > 0)
+  const hasCriteriaData = criteriaOverTime && criteriaOverTime.length > 0
+
+  console.log('[ScoreDistribution] Data check:', {
+    overallData,
+    criteriaOverTime,
+    hasOverallData,
+    hasCriteriaData
+  })
 
   // Don't render if no data at all
   if (!hasOverallData && !hasCriteriaData) {
+    console.log('[ScoreDistribution] No data at all, returning null')
     return null
   }
 
@@ -73,25 +79,27 @@ export function ScoreDistribution({ scoreDistribution, hasEssays }: ScoreDistrib
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <RechartsBarChart data={overallData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
-                <XAxis dataKey="band" tick={{ fill: '#0c4a6e', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#0c4a6e', fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #cffafe',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                  {overallData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </RechartsBarChart>
-            </ResponsiveContainer>
+            <div style={{ width: '100%', height: 250 }}>
+              <ResponsiveContainer>
+                <RechartsBarChart data={overallData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+                  <XAxis dataKey="band" tick={{ fill: '#0c4a6e', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#0c4a6e', fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #cffafe',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#8884d8" radius={[8, 8, 0, 0]}>
+                    {overallData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </RechartsBarChart>
+              </ResponsiveContainer>
+            </div>
             <p className="text-xs text-ocean-600 text-center mt-2">
               How your essays are distributed across band scores
             </p>
@@ -99,39 +107,81 @@ export function ScoreDistribution({ scoreDistribution, hasEssays }: ScoreDistrib
         </Card>
       )}
 
-      {/* Criteria Breakdown */}
+      {/* Criteria Performance Over Time */}
       <Card className="border-ocean-200 shadow-lg">
         <CardHeader>
           <CardTitle className="text-ocean-800 flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Criteria Performance
+            Criteria Performance Over Time
           </CardTitle>
         </CardHeader>
         <CardContent>
           {hasCriteriaData ? (
             <>
-              <ResponsiveContainer width="100%" height={250}>
-                <RechartsBarChart data={criteriaData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
-                  <XAxis type="number" domain={[0, 9]} tick={{ fill: '#0c4a6e', fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: '#0c4a6e', fontSize: 11 }} width={80} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #cffafe',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value: any) => [`Band ${value.toFixed(1)}`, 'Average Score']}
-                  />
-                  <Bar dataKey="score" radius={[0, 8, 8, 0]}>
-                    {criteriaData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </RechartsBarChart>
-              </ResponsiveContainer>
+              <div style={{ width: '100%', height: 250 }}>
+                <ResponsiveContainer>
+                  <LineChart data={criteriaOverTime}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+                    <XAxis
+                      dataKey="essayNumber"
+                      tick={{ fill: '#0c4a6e', fontSize: 12 }}
+                      label={{ value: 'Essay Number', position: 'insideBottom', offset: -5, fill: '#0c4a6e' }}
+                    />
+                    <YAxis
+                      domain={[5, 9]}
+                      ticks={[5, 6, 7, 8]}
+                      tick={{ fill: '#0c4a6e', fontSize: 12 }}
+                      label={{ value: 'Band Score', angle: -90, position: 'insideLeft', fill: '#0c4a6e' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #cffafe',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="taskResponse"
+                      stroke="#60a5fa"
+                      strokeWidth={2}
+                      dot={{ fill: '#60a5fa', r: 4 }}
+                      name="Task Response"
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="coherence"
+                      stroke="#34d399"
+                      strokeWidth={2}
+                      dot={{ fill: '#34d399', r: 4 }}
+                      name="Coherence"
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="vocabulary"
+                      stroke="#fbbf24"
+                      strokeWidth={2}
+                      dot={{ fill: '#fbbf24', r: 4 }}
+                      name="Vocabulary"
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="grammar"
+                      stroke="#f472b6"
+                      strokeWidth={2}
+                      dot={{ fill: '#f472b6', r: 4 }}
+                      name="Grammar"
+                      connectNulls
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
               <p className="text-xs text-ocean-600 text-center mt-2">
-                Your average performance across all 4 IELTS criteria
+                Track how each criteria score changes across your essays
               </p>
             </>
           ) : (

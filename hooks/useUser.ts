@@ -12,14 +12,15 @@ export function useUser() {
   useEffect(() => {
     const fetchUser = async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser()
 
-      if (session?.user) {
+      if (!authError && authUser) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', authUser.id)
           .single()
 
         if (profile) {
@@ -35,16 +36,21 @@ export function useUser() {
     // Subscribe to auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data) setUser(data as User)
-          })
+        // Get authenticated user data
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+
+        if (authUser) {
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', authUser.id)
+            .single()
+            .then(({ data }) => {
+              if (data) setUser(data as User)
+            })
+        }
       } else {
         setUser(null)
       }
