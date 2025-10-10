@@ -10,6 +10,9 @@ import {
   Line,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -141,6 +144,25 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     }, [])
     .slice(-14) || []
 
+  // Token usage pie chart data - Lighter, more vibrant colors
+  const tokenPieData = [
+    { name: 'Input Tokens', value: stats.totalInputTokens, color: '#22d3ee' }, // Light cyan
+    { name: 'Output Tokens', value: stats.totalOutputTokens, color: '#a78bfa' }, // Light purple
+  ]
+
+  // User type distribution pie chart data - Lighter, more vibrant colors
+  const userTypeData = [
+    { name: 'Free Users', value: stats.totalUsers - stats.ptnkUsers - stats.paidProUsers, color: '#67e8f9' }, // Light cyan
+    { name: 'PTNK Students', value: stats.ptnkUsers, color: '#6ee7b7' }, // Light green
+    { name: 'Paid Pro', value: stats.paidProUsers, color: '#fbbf24' }, // Light amber
+  ]
+
+  const COLORS = {
+    ocean: ['#22d3ee', '#67e8f9', '#86efac', '#a78bfa'],
+    users: ['#67e8f9', '#6ee7b7', '#fbbf24'],
+    tokens: ['#22d3ee', '#a78bfa'],
+  }
+
   return (
     <>
       {/* Refresh Button and Last Update */}
@@ -159,33 +181,146 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
         </Button>
       </div>
 
-      {/* Overview Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Overview Stats Cards - Row 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* User Type Distribution Pie Chart */}
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-ocean-700">
-              Total Users
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
-              <Users className="h-5 w-5 text-white" />
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
+                  User Distribution
+                </CardTitle>
+                <CardDescription className="mt-1">Total: {formatNumber(stats.totalUsers)} users</CardDescription>
+              </div>
+              <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalUsers)}
-            </div>
-            <div className="flex gap-3 mt-2">
-              <p className="text-xs text-green-600">
-                <span className="font-semibold">{stats.ptnkUsers}</span> PTNK
-              </p>
-              <p className="text-xs text-orange-600">
-                <span className="font-semibold">{stats.paidProUsers}</span> Paid Pro
-              </p>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <defs>
+                  <filter id="glow-user">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <Pie
+                  data={userTypeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  style={{ filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.4))' }}
+                >
+                  {userTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: any) => formatNumber(value)}
+                  contentStyle={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '8px',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-4 mt-4 justify-center">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
+                <span className="text-xs text-ocean-700">Free: <strong>{stats.totalUsers - stats.ptnkUsers - stats.paidProUsers}</strong></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6ee7b7' }}></div>
+                <span className="text-xs text-ocean-700">PTNK: <strong>{stats.ptnkUsers}</strong></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
+                <span className="text-xs text-ocean-700">Paid Pro: <strong>{stats.paidProUsers}</strong></span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Token Usage Pie Chart */}
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
+                  Token Usage
+                </CardTitle>
+                <CardDescription className="mt-1">Total: {formatNumber(stats.totalInputTokens + stats.totalOutputTokens)} tokens</CardDescription>
+              </div>
+              <div className="rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 p-2 shadow-md">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <defs>
+                  <filter id="glow-token">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <Pie
+                  data={tokenPieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  style={{ filter: 'drop-shadow(0 0 8px rgba(167, 139, 250, 0.4))' }}
+                >
+                  {tokenPieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: any) => formatNumber(value)}
+                  contentStyle={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '8px',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-4 mt-4 justify-center">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#22d3ee' }}></div>
+                <span className="text-xs text-ocean-700">Input: <strong>{formatNumber(stats.totalInputTokens)}</strong></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#a78bfa' }}></div>
+                <span className="text-xs text-ocean-700">Output: <strong>{formatNumber(stats.totalOutputTokens)}</strong></span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-cyan-700">
               Total Essays
@@ -202,43 +337,23 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
           </CardContent>
         </Card>
 
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">
-              Input Tokens
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 p-2 shadow-md">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalInputTokens)}
-            </div>
-            <p className="text-xs text-blue-600 mt-1">Total consumed</p>
-          </CardContent>
-        </Card>
-
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-indigo-700">
-              Output Tokens
+            <CardTitle className="text-sm font-medium text-ocean-700">
+              Avg Essay Score
             </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 p-2 shadow-md">
-              <Zap className="h-5 w-5 text-white" />
+            <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
+              <Award className="h-5 w-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalOutputTokens)}
+            <div className="text-3xl font-bold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent">
+              {stats.avgOverallScore.toFixed(1)}
             </div>
-            <p className="text-xs text-indigo-600 mt-1">Total generated</p>
+            <p className="text-xs text-ocean-600 mt-1">Band score average</p>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Vocabulary Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-teal-700">
@@ -255,7 +370,10 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
             <p className="text-xs text-teal-600 mt-1">Words generated</p>
           </CardContent>
         </Card>
+      </div>
 
+      {/* Quiz Performance Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-emerald-700">
@@ -331,9 +449,10 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                   />
                   <Bar
                     dataKey="count"
-                    fill="#0891b2"
+                    fill="#22d3ee"
                     name="Essays"
                     radius={[8, 8, 0, 0]}
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(34, 211, 238, 0.3))' }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -374,9 +493,10 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                   />
                   <Bar
                     dataKey="count"
-                    fill="#06b6d4"
+                    fill="#67e8f9"
                     name="Essays"
                     radius={[8, 8, 0, 0]}
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(103, 232, 249, 0.3))' }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -420,11 +540,12 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Line
                   type="monotone"
                   dataKey="essays"
-                  stroke="#0891b2"
+                  stroke="#22d3ee"
                   strokeWidth={3}
-                  dot={{ fill: '#0891b2', r: 5 }}
-                  activeDot={{ r: 7 }}
+                  dot={{ fill: '#22d3ee', r: 5, filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#22d3ee', filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.6))' }}
                   name="Essays Submitted"
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -470,11 +591,12 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Line
                   type="monotone"
                   dataKey="avgPercentage"
-                  stroke="#10b981"
+                  stroke="#34d399"
                   strokeWidth={3}
-                  dot={{ fill: '#10b981', r: 5 }}
-                  activeDot={{ r: 7 }}
+                  dot={{ fill: '#34d399', r: 5, filter: 'drop-shadow(0 0 4px rgba(52, 211, 153, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#34d399', filter: 'drop-shadow(0 0 6px rgba(52, 211, 153, 0.6))' }}
                   name="Average Score"
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(52, 211, 153, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
