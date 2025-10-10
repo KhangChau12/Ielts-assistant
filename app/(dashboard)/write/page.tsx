@@ -121,6 +121,14 @@ export default function WritePage() {
           return
         }
 
+        // Check if it's an invalid essay error
+        if (data.invalid) {
+          setError(data.error || 'Please submit a valid IELTS Task 2 essay in English.')
+          setIsSubmitting(false)
+          setProgress(0)
+          return
+        }
+
         setShowUpgradeButton(data.showUpgradeButton || false)
         throw new Error(data.error || 'Failed to submit essay')
       }
@@ -217,8 +225,37 @@ export default function WritePage() {
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md space-y-3">
-                <p className="text-sm text-red-800">{error}</p>
+              <div className={`p-4 border rounded-md space-y-3 ${
+                error.includes('valid IELTS')
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-red-50 border-red-200'
+              }`}>
+                <div className="flex items-start gap-3">
+                  {error.includes('valid IELTS') && (
+                    <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                  )}
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium ${
+                      error.includes('valid IELTS') ? 'text-amber-900' : 'text-red-800'
+                    }`}>
+                      {error.includes('valid IELTS') ? 'Invalid Essay Format' : 'Error'}
+                    </p>
+                    <p className={`text-sm mt-1 ${
+                      error.includes('valid IELTS') ? 'text-amber-700' : 'text-red-700'
+                    }`}>
+                      {error}
+                    </p>
+                    {error.includes('valid IELTS') && (
+                      <ul className="text-xs text-amber-600 mt-2 space-y-1">
+                        <li>• Essay must be in English</li>
+                        <li>• Length should be 150-500 words</li>
+                        <li>• Must address the given IELTS Task 2 prompt</li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
                 {showUpgradeButton && (
                   <Link href="/subscription">
                     <Button

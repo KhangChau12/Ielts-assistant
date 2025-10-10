@@ -31,7 +31,9 @@ export interface EssayScoringResponse {
   strengths: EssayStrengths
   comments: EssayComments
   scores: EssayScores
-  overall_score: number
+  overall_score: number | 'N/A'
+  invalid?: boolean
+  message?: string
 }
 
 export interface ImprovementChange {
