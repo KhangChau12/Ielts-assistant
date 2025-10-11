@@ -12,7 +12,12 @@
       "Bash(npm run dev:*)",
       "Bash(wc:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(npx shadcn-ui:*)"
+      "Bash(npx shadcn-ui:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

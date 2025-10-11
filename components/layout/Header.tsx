@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown } from 'lucide-react'
+import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -39,6 +39,9 @@ export function Header({ user }: HeaderProps) {
   }
 
   const isActive = (path: string) => pathname === path
+
+  // Check if user is Pro (PTNK email)
+  const isPro = user?.email.endsWith('@ptnk.edu.vn') || false
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-ocean-900 shadow-md">
@@ -156,6 +159,19 @@ export function Header({ user }: HeaderProps) {
                   <p className="text-sm">Sign up to access your Vocabulary collection</p>
                 </TooltipContent>
               </Tooltip>
+            )}
+
+            {/* Invite - Show for Free tier users only (not Pro/PTNK) */}
+            {user && !isPro && (
+              <Link href="/invite">
+                <Button
+                  variant={isActive('/invite') ? 'secondary' : 'ghost'}
+                  className={isActive('/invite') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  Invite
+                </Button>
+              </Link>
             )}
 
             {/* Admin - Show for admin only */}

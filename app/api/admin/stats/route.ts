@@ -97,6 +97,37 @@ export async function GET() {
     // Pro users who are NOT PTNK (future paid subscribers)
     const paidProUsers = 0 // Currently we don't have paid subscriptions yet
 
+    // User growth over last 14 days
+    const fourteenDaysAgo = new Date()
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+
+    const userGrowthData: { [key: string]: number } = {}
+    const today = new Date()
+
+    // Initialize all 14 days with 0
+    for (let i = 13; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateKey = date.toISOString().split('T')[0]
+      userGrowthData[dateKey] = 0
+    }
+
+    // Count cumulative users up to each day
+    users?.forEach(user => {
+      const userDate = new Date(user.created_at).toISOString().split('T')[0]
+      // Increment count for this day and all days after
+      Object.keys(userGrowthData).forEach(dateKey => {
+        if (userDate <= dateKey) {
+          userGrowthData[dateKey]++
+        }
+      })
+    })
+
+    const usersOverTime = Object.entries(userGrowthData).map(([date, count]) => ({
+      date,
+      count
+    }))
+
     return NextResponse.json({
       totalUsers: totalUsers || 0,
       ptnkUsers,
@@ -117,6 +148,7 @@ export async function GET() {
       avgParaphraseScore: Math.round(avgParaphraseScore * 10) / 10,
       avgTopicScore: Math.round(avgTopicScore * 10) / 10,
       quizAttemptsOverTime,
+      usersOverTime,
     })
   } catch (error) {
     console.error('Error fetching admin stats:', error)

@@ -17,10 +17,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get profile with quota info
+    // Get profile with quota info including invite bonuses
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email, daily_essays_count, last_reset_date, total_essays_count')
+      .select('email, daily_essays_count, last_reset_date, total_essays_count, invite_bonus_essays')
       .eq('id', user.id)
       .single()
 
@@ -44,10 +44,14 @@ export async function GET() {
     }
 
     const dailyQuota = getDailyQuota(profile.email)
-    const totalQuota = getTotalQuota(profile.email)
+    const baseQuota = getTotalQuota(profile.email)
+    const bonusEssays = profile.invite_bonus_essays || 0
     const tier = getUserTier(profile.email)
     const dailyRemaining = dailyQuota - dailyCount
     const totalCount = profile.total_essays_count || 0
+
+    // Calculate total quota with bonuses for free users
+    const totalQuota = baseQuota !== null ? baseQuota + bonusEssays : null
     const totalRemaining = totalQuota !== null ? totalQuota - totalCount : null
 
     return NextResponse.json({
@@ -62,6 +66,8 @@ export async function GET() {
         quota: totalQuota,
         used: totalCount,
         remaining: totalRemaining !== null ? Math.max(0, totalRemaining) : null,
+        baseQuota: baseQuota,
+        bonusEssays: bonusEssays,
       },
     })
   } catch (error) {

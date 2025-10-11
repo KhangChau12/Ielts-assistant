@@ -15,6 +15,8 @@ interface QuotaInfo {
     quota: number | null
     used: number
     remaining: number | null
+    baseQuota?: number | null
+    bonusEssays?: number
   }
 }
 
@@ -74,6 +76,11 @@ export function QuotaDisplay() {
           {!isPro && quotaInfo.total.quota !== null && (
             <span className="text-xs text-ocean-500">
               {quotaInfo.total.remaining}/{quotaInfo.total.quota} total
+              {quotaInfo.total.bonusEssays && quotaInfo.total.bonusEssays > 0 && (
+                <span className="text-green-600 font-medium ml-1">
+                  (+{quotaInfo.total.bonusEssays} bonus)
+                </span>
+              )}
             </span>
           )}
         </div>

@@ -37,6 +37,10 @@ interface AdminStats {
     created_at: string
     percentage: number
   }>
+  usersOverTime: Array<{
+    date: string
+    count: number
+  }>
 }
 
 async function getAdminStats(): Promise<AdminStats> {
@@ -76,6 +80,7 @@ async function getAdminStats(): Promise<AdminStats> {
       avgParaphraseScore: 0,
       avgTopicScore: 0,
       quizAttemptsOverTime: [],
+      usersOverTime: [],
     }
   }
 }

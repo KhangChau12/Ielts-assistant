@@ -20,13 +20,13 @@ export function getDailyQuota(email: string): number {
 /**
  * Get total essay limit (lifetime)
  * Pro: unlimited
- * Free: 9 essays max
+ * Free: 6 essays base (+ invite bonuses)
  */
 export function getTotalQuota(email: string): number | null {
   if (email.endsWith('@ptnk.edu.vn')) {
     return null // Unlimited for Pro
   }
-  return 9 // Free tier limit
+  return 6 // Free tier limit (can earn more via invites)
 }
 
 /**
@@ -66,16 +66,16 @@ export function getQuotaExhaustedMessage(tier: UserTier, isDaily: boolean): {
   }
 
   if (isDaily) {
-    // Free user hit daily limit (but not total limit yet)
+    // Free user hit DAILY limit (can still use more tomorrow if have quota left)
     return {
-      message: "You've reached your daily limit of 3 essays. Upgrade to Pro for 5 essays per day and unlimited total essays!",
+      message: "You've reached your daily limit of 3 essays. Come back tomorrow to continue! Upgrade to Pro for 5 essays per day.",
       showUpgradeButton: true
     }
   }
 
-  // Free user hit total limit (9 essays)
+  // Free user hit TOTAL limit (completely out of essays)
   return {
-    message: "You've completed all 9 free essays! Upgrade to Pro to unlock unlimited essays (5 per day) and continue your IELTS journey.",
+    message: "You've used all your free essays! To continue, invite friends to earn +6 essays per successful signup (they get +3 bonus too). Or upgrade to Pro for unlimited essays.",
     showUpgradeButton: true
   }
 }

@@ -56,6 +56,10 @@ interface AdminStats {
     created_at: string
     percentage: number
   }>
+  usersOverTime: Array<{
+    date: string
+    count: number
+  }>
 }
 
 interface AdminDashboardClientProps {
@@ -109,19 +113,30 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     count: stats.scoreDistribution[score] || 0,
   }))
 
-  // Prepare essays over time data
-  const essaysOverTimeData = stats.essaysOverTime
-    .reduce((acc: any[], essay) => {
+  // Prepare essays over time data (CUMULATIVE - always increasing!)
+  const essaysOverTimeData = (() => {
+    // Group essays by date and count
+    const dailyCounts: { [key: string]: number } = {}
+
+    stats.essaysOverTime.forEach(essay => {
       const date = format(new Date(essay.created_at), 'MMM dd')
-      const existing = acc.find((item) => item.date === date)
-      if (existing) {
-        existing.essays += 1
-      } else {
-        acc.push({ date, essays: 1 })
+      dailyCounts[date] = (dailyCounts[date] || 0) + 1
+    })
+
+    // Get last 14 days
+    const allDates = Object.keys(dailyCounts).sort()
+    const last14Dates = allDates.slice(-14)
+
+    // Calculate cumulative total for each date
+    let cumulativeTotal = 0
+    return last14Dates.map(date => {
+      cumulativeTotal += dailyCounts[date]
+      return {
+        date,
+        essays: cumulativeTotal
       }
-      return acc
-    }, [])
-    .slice(-14)
+    })
+  })()
 
   // Prepare quiz performance data
   const quizPerformanceData = stats.quizAttemptsOverTime
@@ -513,7 +528,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
       <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
         <CardHeader>
           <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Essays Over Time</CardTitle>
-          <CardDescription>Essay submission trends over the last 14 days</CardDescription>
+          <CardDescription>Cumulative essay count - always growing! 📈</CardDescription>
         </CardHeader>
         <CardContent>
           {essaysOverTimeData.length > 0 ? (
@@ -544,7 +559,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                   strokeWidth={3}
                   dot={{ fill: '#22d3ee', r: 5, filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.5))' }}
                   activeDot={{ r: 7, fill: '#22d3ee', filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.6))' }}
-                  name="Essays Submitted"
+                  name="Total Essays"
                   style={{ filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.3))' }}
                 />
               </LineChart>
@@ -603,6 +618,58 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
           ) : (
             <div className="h-[350px] flex items-center justify-center text-ocean-600">
               <p>No quiz data available</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* User Growth Over Time Chart */}
+      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '1.1s' }}>
+        <CardHeader>
+          <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">User Growth</CardTitle>
+          <CardDescription>Total user count over the last 14 days</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {stats.usersOverTime.length > 0 ? (
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={stats.usersOverTime.map(item => ({
+                ...item,
+                displayDate: format(new Date(item.date), 'MMM dd')
+              }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+                <XAxis
+                  dataKey="displayDate"
+                  stroke="#0c4a6e"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  stroke="#0c4a6e"
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: any) => [`${formatNumber(value)} users`, 'Total Users']}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#06b6d4"
+                  strokeWidth={3}
+                  dot={{ fill: '#06b6d4', r: 5, filter: 'drop-shadow(0 0 4px rgba(6, 182, 212, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#06b6d4', filter: 'drop-shadow(0 0 6px rgba(6, 182, 212, 0.6))' }}
+                  name="Total Users"
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(6, 182, 212, 0.3))' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[350px] flex items-center justify-center text-ocean-600">
+              <p>No user growth data available</p>
             </div>
           )}
         </CardContent>

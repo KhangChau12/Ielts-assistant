@@ -21,10 +21,10 @@ export default async function SubscriptionPage() {
     redirect('/login')
   }
 
-  // Get user profile
+  // Get user profile with invite bonuses
   const { data: profile } = await supabase
     .from('profiles')
-    .select('email, daily_essays_count, total_essays_count, last_reset_date')
+    .select('email, daily_essays_count, total_essays_count, last_reset_date, invite_bonus_essays')
     .eq('id', user.id)
     .single()
 
@@ -43,7 +43,10 @@ export default async function SubscriptionPage() {
   const userEmail = profile.email
   const tier = getUserTier(userEmail)
   const dailyQuota = getDailyQuota(userEmail)
-  const totalQuota = getTotalQuota(userEmail)
+  const baseTotalQuota = getTotalQuota(userEmail)
+  const bonusEssays = profile.invite_bonus_essays || 0
+  // Calculate total quota including invite bonuses
+  const totalQuota = baseTotalQuota !== null ? baseTotalQuota + bonusEssays : null
   const totalCount = profile.total_essays_count || 0
 
   const isPro = tier === 'pro'
@@ -213,7 +216,7 @@ export default async function SubscriptionPage() {
               <div className="flex items-start gap-3">
                 <Check className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-ocean-700">
-                  <strong>Maximum 9 essays total</strong>
+                  <strong>6 essays base</strong> (earn more by inviting friends!)
                 </span>
               </div>
               <div className="flex items-start gap-3">
