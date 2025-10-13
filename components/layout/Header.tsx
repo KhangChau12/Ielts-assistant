@@ -47,11 +47,11 @@ export function Header({ user }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-ocean-900 shadow-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500">
-            <FileText className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-xl font-bold text-white">IELTS4Life</span>
+        <Link href="/" className="flex items-center">
+          <span className="text-4xl font-[family-name:var(--font-shrikhand)]">
+            <span className="text-cyan-400">IELTS</span>
+            <span className="text-white">4Life</span>
+          </span>
         </Link>
 
         {/* Navigation */}

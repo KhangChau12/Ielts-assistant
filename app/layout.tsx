@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Shrikhand } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { createServerClient } from '@/lib/supabase/server'
 
 const inter = Inter({ subsets: ['latin'] })
+const shrikhand = Shrikhand({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-shrikhand',
+})
 
 export const metadata: Metadata = {
   title: 'IELTS4Life - AI-Powered Writing Coach',
@@ -40,7 +45,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${shrikhand.variable}`}>
         <div className="flex min-h-screen flex-col">
           <Header user={user} />
           <main className="flex-1">{children}</main>
