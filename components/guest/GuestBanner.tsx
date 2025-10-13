@@ -15,7 +15,7 @@ export function GuestBanner() {
             Guest Mode - Your progress won't be saved
           </p>
           <p className="text-xs text-amber-700">
-            Sign up FREE to save your work, track improvement with charts, and get 3 essays per day (9 total)!
+            Sign up FREE to save your work, track improvement with charts, and get 3 essays per day!
           </p>
         </div>
         <Link href="/login">

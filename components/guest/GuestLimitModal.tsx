@@ -66,7 +66,7 @@ export function GuestLimitModal({ open, onOpenChange, existingEssayId }: GuestLi
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-ocean-800">9 total free essays to practice</p>
+                  <p className="text-sm font-medium text-ocean-800">Free essays to practice</p>
                   <p className="text-xs text-ocean-600">Plenty of opportunities to improve before your exam</p>
                 </div>
               </div>
