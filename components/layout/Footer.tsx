@@ -4,7 +4,7 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
           <div className="text-center text-sm text-slate-600 md:text-left">
-            <p>&copy; {new Date().getFullYear()} IELTS Assistant. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} IELTS4Life. All rights reserved.</p>
           </div>
           <div className="text-sm text-slate-600">
             <p>

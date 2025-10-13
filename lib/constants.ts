@@ -1,4 +1,4 @@
-export const SITE_NAME = 'IELTS Assistant'
+export const SITE_NAME = 'IELTS4Life'
 export const SITE_DESCRIPTION = 'AI-powered IELTS Writing Task 2 coach'
 
 // IELTS Band Score Labels

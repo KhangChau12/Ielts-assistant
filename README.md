@@ -1,4 +1,4 @@
-# IELTS Assistant - AI-Powered Writing Coach
+# IELTS4Life - AI-Powered Writing Coach
 
 A comprehensive web application that helps students improve their IELTS Writing Task 2 skills through AI-powered scoring, detailed feedback, vocabulary enhancement, and interactive learning tools.
 

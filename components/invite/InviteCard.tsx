@@ -83,7 +83,7 @@ export function InviteCard({ inviteCode }: InviteCardProps) {
           <div className="p-3 bg-gradient-to-r from-ocean-50 to-cyan-50 border border-ocean-200 rounded-lg">
             <p className="text-xs text-ocean-800 font-medium mb-1">Share message:</p>
             <p className="text-xs text-ocean-600 italic">
-              "Try IELTS Assistant for AI essay scoring! Use my code {inviteCode} for 3 free bonus essays"
+              "Try IELTS4Life for AI essay scoring! Use my code {inviteCode} for 3 free bonus essays"
             </p>
           </div>
         </div>

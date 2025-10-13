@@ -3,8 +3,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard - IELTS Assistant',
-  description: 'Administrative panel for IELTS Assistant',
+  title: 'Admin Dashboard - IELTS4Life',
+  description: 'Administrative panel for IELTS4Life',
 }
 
 export default async function AdminLayout({

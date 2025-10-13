@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard - IELTS Assistant',
+  title: 'Dashboard - IELTS4Life',
   description: 'Write and review your IELTS essays',
 }
 

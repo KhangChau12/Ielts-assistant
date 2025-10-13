@@ -6,7 +6,7 @@ import { Check, Crown, FileText } from 'lucide-react'
 import { getDailyQuota, getTotalQuota, getUserTier } from '@/lib/user/quota'
 
 export const metadata = {
-  title: 'Subscription - IELTS Assistant',
+  title: 'Subscription - IELTS4Life',
   description: 'Choose your plan',
 }
 
@@ -341,7 +341,7 @@ export default async function SubscriptionPage() {
         <CardContent className="pt-6">
           <div className="prose prose-sm max-w-none">
             <p className="text-ocean-700 leading-relaxed mb-4">
-              Running this IELTS Assistant platform requires servers, AI API costs, and ongoing development.
+              Running this IELTS4Life platform requires servers, AI API costs, and ongoing development.
               Your Pro subscription helps us:
             </p>
             <ul className="space-y-2 text-ocean-700">

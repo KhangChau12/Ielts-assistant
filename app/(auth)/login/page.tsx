@@ -79,7 +79,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
               <Waves className="w-7 h-7 text-white" />
             </div>
-            <span className="text-2xl font-bold text-white">IELTS Assistant</span>
+            <span className="text-2xl font-bold text-white">IELTS4Life</span>
           </div>
 
           {/* Main heading */}
@@ -124,7 +124,7 @@ export default function LoginPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 bg-ocean-600 rounded-xl mb-4">
               <Waves className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-ocean-800">IELTS Assistant</h1>
+            <h1 className="text-2xl font-bold text-ocean-800">IELTS4Life</h1>
           </div>
 
           {/* Form card */}

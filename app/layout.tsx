@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'IELTS Assistant - AI-Powered Writing Coach',
+  title: 'IELTS4Life - AI-Powered Writing Coach',
   description: 'Improve your IELTS Writing Task 2 with AI-powered scoring, feedback, and vocabulary enhancement tools.',
 }
 

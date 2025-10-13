@@ -51,7 +51,7 @@ export function Header({ user }: HeaderProps) {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500">
             <FileText className="h-6 w-6 text-white" />
           </div>
-          <span className="text-xl font-bold text-white">IELTS Assistant</span>
+          <span className="text-xl font-bold text-white">IELTS4Life</span>
         </Link>
 
         {/* Navigation */}
