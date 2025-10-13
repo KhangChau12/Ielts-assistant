@@ -87,7 +87,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen flex">
         {/* Left side - Hero section */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-ocean-600 via-ocean-700 to-cyan-700 px-16 py-20 flex-col justify-center relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 px-16 py-20 flex-col justify-center relative overflow-hidden">
           <div className="absolute inset-0 overflow-hidden opacity-30">
             <div className="absolute top-0 left-0 w-full h-full">
               <div className="absolute top-20 right-20 w-72 h-72 bg-cyan-400 rounded-full blur-3xl opacity-20" />
@@ -96,11 +96,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="relative z-10 text-center max-w-lg mx-auto">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl mb-8">
-              <Mail className="w-12 h-12 text-white" />
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-white/80 backdrop-blur-sm rounded-2xl mb-8">
+              <Mail className="w-12 h-12 text-slate-900" />
             </div>
-            <h2 className="text-5xl font-bold text-white mb-6">Check Your Email</h2>
-            <p className="text-xl text-ocean-100 leading-relaxed">
+            <h2 className="text-5xl font-bold text-slate-900 mb-6">Check Your Email</h2>
+            <p className="text-xl text-slate-600 leading-relaxed">
               We've sent a verification link to activate your account and start your IELTS journey.
             </p>
           </div>
@@ -162,49 +162,62 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Hero section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-ocean-600 via-ocean-700 to-cyan-700 px-16 py-20 flex-col justify-start relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden opacity-30">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 px-16 py-20 flex-col justify-start relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-20 right-20 w-72 h-72 bg-cyan-400 rounded-full blur-3xl opacity-20" />
-            <div className="absolute bottom-20 left-20 w-96 h-96 bg-ocean-500 rounded-full blur-3xl opacity-20" />
+            <div className="absolute top-20 right-20 w-96 h-96 bg-gradient-to-br from-cyan-400/30 to-blue-500/30 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-br from-sky-400/30 to-cyan-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+
+            {/* Floating shapes */}
+            <div className="absolute top-1/4 left-1/4 h-4 w-4 rounded-full bg-cyan-400/40 animate-float" />
+            <div className="absolute top-1/3 right-1/3 h-3 w-3 rounded-full bg-blue-400/40 animate-float" style={{ animationDelay: '0.5s' }} />
+            <div className="absolute bottom-1/3 left-1/2 h-5 w-5 rounded-full bg-sky-400/40 animate-float" style={{ animationDelay: '1.5s' }} />
+
+            {/* Grid pattern overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e0f2fe_1px,transparent_1px),linear-gradient(to_bottom,#e0f2fe_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
           </div>
         </div>
 
+        {/* Content */}
         <div className="relative z-10 max-w-lg">
+          {/* Logo */}
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Waves className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center border border-cyan-200 shadow-lg">
+              <Waves className="w-7 h-7 text-cyan-600" />
             </div>
-            <span className="text-2xl font-bold text-white">IELTS4Life</span>
+            <span className="text-2xl font-bold text-slate-900">IELTS4Life</span>
           </div>
 
+          {/* Main heading */}
           <div className="mb-12">
-            <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl font-bold text-slate-900 mb-6 leading-tight">
               Start your journey
             </h1>
-            <p className="text-xl text-ocean-100 leading-relaxed">
+            <p className="text-xl text-slate-600 leading-relaxed">
               Join thousands of students achieving their IELTS goals with personalized AI feedback.
             </p>
           </div>
 
+          {/* Features */}
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
-                <CheckCircle2 className="w-6 h-6 text-cyan-300" />
+                <CheckCircle2 className="w-6 h-6 text-cyan-600" />
               </div>
-              <p className="text-lg text-white/90">Get 6 free essays to start your practice</p>
+              <p className="text-lg text-slate-700">Get 6 free essays to start your practice</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
-                <CheckCircle2 className="w-6 h-6 text-cyan-300" />
+                <CheckCircle2 className="w-6 h-6 text-cyan-600" />
               </div>
-              <p className="text-lg text-white/90">Receive instant AI-powered feedback</p>
+              <p className="text-lg text-slate-700">Receive instant AI-powered feedback</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
-                <CheckCircle2 className="w-6 h-6 text-cyan-300" />
+                <CheckCircle2 className="w-6 h-6 text-cyan-600" />
               </div>
-              <p className="text-lg text-white/90">Invite friends to earn more essays</p>
+              <p className="text-lg text-slate-700">Invite friends to earn more essays</p>
             </div>
           </div>
         </div>

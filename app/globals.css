@@ -397,6 +397,19 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Background Size Animation */
+.bg-size-200 {
+  background-size: 200% 100%;
+}
+
+.bg-pos-0 {
+  background-position: 0% 50%;
+}
+
+.bg-pos-100 {
+  background-position: 100% 50%;
+}
+
 /* Selection Color */
 ::selection {
   background-color: rgba(6, 182, 212, 0.3);
