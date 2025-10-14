@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
-import { Inter, Shrikhand } from 'next/font/google'
+import { Nunito, Shrikhand } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { createServerClient } from '@/lib/supabase/server'
 
-const inter = Inter({ subsets: ['latin'] })
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['300', '400', '600', '700', '800', '900'],
+})
 const shrikhand = Shrikhand({
   weight: '400',
   subsets: ['latin'],
@@ -45,7 +48,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.className} ${shrikhand.variable}`}>
+      <body className={`${nunito.className} ${shrikhand.variable}`}>
         <div className="flex min-h-screen flex-col">
           <Header user={user} />
           <main className="flex-1">{children}</main>
