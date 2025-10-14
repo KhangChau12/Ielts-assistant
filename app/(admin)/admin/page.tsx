@@ -89,13 +89,13 @@ export default async function AdminDashboardPage() {
   const stats = await getAdminStats()
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 px-4">
       {/* Header */}
-      <div className="mb-8 animate-fadeInUp">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent mb-2">
+      <div className="mb-6 md:mb-8 animate-fadeInUp">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent mb-2">
           Admin Dashboard
         </h1>
-        <p className="text-ocean-600 text-lg">
+        <p className="text-ocean-600 text-sm md:text-base lg:text-lg">
           Monitor system statistics and user activity
         </p>
       </div>

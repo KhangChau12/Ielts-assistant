@@ -181,15 +181,15 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
   return (
     <>
       {/* Refresh Button and Last Update */}
-      <div className="flex justify-between items-center animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
-        <p className="text-sm text-ocean-600">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+        <p className="text-xs md:text-sm text-ocean-600">
           Last updated: {format(lastUpdate, 'MMM dd, yyyy HH:mm:ss')}
         </p>
         <Button
           onClick={handleRefresh}
           disabled={isRefreshing}
           variant="outline"
-          className="border-ocean-300 text-ocean-700 hover:bg-ocean-50 transition-all"
+          className="border-ocean-300 text-ocean-700 hover:bg-ocean-50 transition-all text-sm"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -197,24 +197,24 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
       </div>
 
       {/* Overview Stats Cards - Row 1 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* User Type Distribution Pie Chart */}
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
-          <CardHeader>
+          <CardHeader className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
+                <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
                   User Distribution
                 </CardTitle>
-                <CardDescription className="mt-1">Total: {formatNumber(stats.totalUsers)} users</CardDescription>
+                <CardDescription className="mt-1 text-xs md:text-sm">Total: {formatNumber(stats.totalUsers)} users</CardDescription>
               </div>
               <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
-                <Users className="h-5 w-5 text-white" />
+                <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
+          <CardContent className="p-4 md:p-6">
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <defs>
                   <filter id="glow-user">
@@ -250,18 +250,18 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap gap-4 mt-4 justify-center">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
-                <span className="text-xs text-ocean-700">Free: <strong>{stats.totalUsers - stats.ptnkUsers - stats.paidProUsers}</strong></span>
+            <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
+              <div className="flex items-center gap-1 md:gap-2">
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
+                <span className="text-ocean-700">Free: <strong>{stats.totalUsers - stats.ptnkUsers - stats.paidProUsers}</strong></span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6ee7b7' }}></div>
-                <span className="text-xs text-ocean-700">PTNK: <strong>{stats.ptnkUsers}</strong></span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#6ee7b7' }}></div>
+                <span className="text-ocean-700">PTNK: <strong>{stats.ptnkUsers}</strong></span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
-                <span className="text-xs text-ocean-700">Paid Pro: <strong>{stats.paidProUsers}</strong></span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
+                <span className="text-ocean-700">Paid Pro: <strong>{stats.paidProUsers}</strong></span>
               </div>
             </div>
           </CardContent>
@@ -269,21 +269,21 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
 
         {/* Token Usage Pie Chart */}
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
-          <CardHeader>
+          <CardHeader className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
+                <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
                   Token Usage
                 </CardTitle>
-                <CardDescription className="mt-1">Total: {formatNumber(stats.totalInputTokens + stats.totalOutputTokens)} tokens</CardDescription>
+                <CardDescription className="mt-1 text-xs md:text-sm">Total: {formatNumber(stats.totalInputTokens + stats.totalOutputTokens)} tokens</CardDescription>
               </div>
               <div className="rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 p-2 shadow-md">
-                <Zap className="h-5 w-5 text-white" />
+                <Zap className="h-4 w-4 md:h-5 md:w-5 text-white" />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
+          <CardContent className="p-4 md:p-6">
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <defs>
                   <filter id="glow-token">
@@ -319,14 +319,14 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap gap-4 mt-4 justify-center">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#22d3ee' }}></div>
-                <span className="text-xs text-ocean-700">Input: <strong>{formatNumber(stats.totalInputTokens)}</strong></span>
+            <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
+              <div className="flex items-center gap-1 md:gap-2">
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#22d3ee' }}></div>
+                <span className="text-ocean-700">Input: <strong>{formatNumber(stats.totalInputTokens)}</strong></span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#a78bfa' }}></div>
-                <span className="text-xs text-ocean-700">Output: <strong>{formatNumber(stats.totalOutputTokens)}</strong></span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#a78bfa' }}></div>
+                <span className="text-ocean-700">Output: <strong>{formatNumber(stats.totalOutputTokens)}</strong></span>
               </div>
             </div>
           </CardContent>
@@ -334,7 +334,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
       </div>
 
       {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-cyan-700">
@@ -677,48 +677,75 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
 
       {/* Recent Users Table */}
       <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
-        <CardHeader>
-          <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Recent Users</CardTitle>
-          <CardDescription>Last 10 registered users</CardDescription>
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Recent Users</CardTitle>
+          <CardDescription className="text-xs md:text-sm">Last 10 registered users</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           {stats.recentUsers.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-ocean-200">
-                    <th className="text-left py-3 px-4 text-ocean-700 font-semibold">Email</th>
-                    <th className="text-left py-3 px-4 text-ocean-700 font-semibold">Role</th>
-                    <th className="text-left py-3 px-4 text-ocean-700 font-semibold">Created At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.recentUsers.map((user) => (
-                    <tr
-                      key={user.id}
-                      className="border-b border-ocean-100 hover:bg-ocean-50 transition-colors"
-                    >
-                      <td className="py-3 px-4 text-ocean-800">{user.email}</td>
-                      <td className="py-3 px-4">
-                        <Badge
-                          variant={user.role === 'admin' ? 'default' : 'secondary'}
-                          className={
-                            user.role === 'admin'
-                              ? 'bg-cyan-600 hover:bg-cyan-700'
-                              : 'bg-ocean-200 text-ocean-800 hover:bg-ocean-300'
-                          }
-                        >
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-ocean-600">
-                        {format(new Date(user.created_at), 'MMM dd, yyyy HH:mm')}
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {stats.recentUsers.map((user) => (
+                  <div key={user.id} className="border border-ocean-200 rounded-lg p-3 bg-white">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="text-sm text-ocean-800 font-medium break-all flex-1 pr-2">{user.email}</p>
+                      <Badge
+                        variant={user.role === 'admin' ? 'default' : 'secondary'}
+                        className={`text-xs whitespace-nowrap ${
+                          user.role === 'admin'
+                            ? 'bg-cyan-600 hover:bg-cyan-700'
+                            : 'bg-ocean-200 text-ocean-800 hover:bg-ocean-300'
+                        }`}
+                      >
+                        {user.role}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-ocean-600">
+                      {format(new Date(user.created_at), 'MMM dd, yyyy HH:mm')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-ocean-200">
+                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Email</th>
+                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Role</th>
+                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Created At</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {stats.recentUsers.map((user) => (
+                      <tr
+                        key={user.id}
+                        className="border-b border-ocean-100 hover:bg-ocean-50 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-ocean-800 text-sm">{user.email}</td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant={user.role === 'admin' ? 'default' : 'secondary'}
+                            className={
+                              user.role === 'admin'
+                                ? 'bg-cyan-600 hover:bg-cyan-700'
+                                : 'bg-ocean-200 text-ocean-800 hover:bg-ocean-300'
+                            }
+                          >
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-ocean-600 text-sm">
+                          {format(new Date(user.created_at), 'MMM dd, yyyy HH:mm')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <div className="py-12 text-center text-ocean-600">
               <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
