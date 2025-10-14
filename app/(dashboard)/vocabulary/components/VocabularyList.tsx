@@ -243,14 +243,14 @@ export function VocabularyList({ essays }: VocabularyListProps) {
     <div className="space-y-4">
       {/* Filter Controls */}
       <Card className="border-ocean-200 shadow-sm">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
+        <CardContent className="pt-4 md:pt-6 px-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
             <div className="flex items-center gap-2 text-ocean-700">
               <Filter className="h-4 w-4" />
-              <span className="text-sm font-medium">Filter:</span>
+              <span className="text-xs md:text-sm font-medium">Filter:</span>
             </div>
             <Select value={filterOption} onValueChange={setFilterOption}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-full md:w-[220px]">
                 <SelectValue placeholder="Filter essays" />
               </SelectTrigger>
               <SelectContent>
@@ -261,7 +261,7 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                 <SelectItem value="completed">Quiz Completed</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-ocean-600 ml-auto">
+            <span className="text-xs md:text-sm text-ocean-600 md:ml-auto">
               Showing {filteredEssays.length} of {essays.length} essays
             </span>
           </div>
@@ -275,22 +275,22 @@ export function VocabularyList({ essays }: VocabularyListProps) {
 
         return (
           <Card key={essay.id} className="border-ocean-200 card-premium shadow-colored hover-lift animate-fadeInUp">
-            <CardHeader className="bg-gradient-to-r from-ocean-50 to-cyan-50 border-b border-ocean-200">
-              <div className="flex justify-between items-start gap-4">
+            <CardHeader className="bg-gradient-to-r from-ocean-50 to-cyan-50 border-b border-ocean-200 p-4 md:p-6">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 md:gap-4">
                 <div className="flex-1">
-                  <CardTitle className="text-lg bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-2">
-                    {truncateText(essay.prompt)}
+                  <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-2">
+                    {truncateText(essay.prompt, 100)}
                   </CardTitle>
-                  <CardDescription className="text-ocean-600">
+                  <CardDescription className="text-xs md:text-sm text-ocean-600">
                     Submitted on {formatDate(essay.created_at)}
                     {essay.overall_score && (
-                      <span className="ml-3 text-ocean-700 font-semibold">
+                      <span className="block md:inline md:ml-3 text-ocean-700 font-semibold mt-1 md:mt-0">
                         Overall Score: {essay.overall_score}
                       </span>
                     )}
                   </CardDescription>
                 </div>
-                <div className="flex flex-col gap-2 items-end">
+                <div className="flex flex-row md:flex-col gap-2 md:items-end flex-wrap">
                   {essay.hasParaphraseVocab && (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-ocean-600 font-medium">Paraphrase:</span>
@@ -306,14 +306,14 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
               <div className="space-y-3">
                 {/* Buttons - always show */}
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 md:gap-3">
                   {/* View Vocabulary Button - shown if any vocab exists */}
                   {(essay.hasParaphraseVocab || essay.hasTopicVocab) && (
-                    <Link href={`/vocabulary/${essay.id}`}>
-                      <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white shadow-md hover:shadow-lg transition-all">
+                    <Link href={`/vocabulary/${essay.id}`} className="w-full sm:w-auto">
+                      <Button className="w-full sm:w-auto bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white shadow-md hover:shadow-lg transition-all text-sm md:text-base">
                         <BookOpen className="mr-2 h-4 w-4" />
                         View Vocabulary
                       </Button>
@@ -326,10 +326,11 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                       onClick={() => handleGenerateVocab(essay.id, 'paraphrase')}
                       disabled={paraphraseLoading}
                       variant="outline"
-                      className="border-ocean-300 text-ocean-700 hover:bg-ocean-50 hover:border-ocean-400 shadow-sm hover:shadow-md transition-all"
+                      className="w-full sm:w-auto border-ocean-300 text-ocean-700 hover:bg-ocean-50 hover:border-ocean-400 shadow-sm hover:shadow-md transition-all text-xs md:text-sm"
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Paraphrase Vocab
+                      <span className="hidden sm:inline">Generate Paraphrase Vocab</span>
+                      <span className="sm:hidden">Paraphrase Vocab</span>
                     </Button>
                   )}
 
@@ -339,16 +340,17 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                       onClick={() => handleGenerateVocab(essay.id, 'topic')}
                       disabled={topicLoading}
                       variant="outline"
-                      className="border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-400 shadow-sm hover:shadow-md transition-all"
+                      className="w-full sm:w-auto border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-400 shadow-sm hover:shadow-md transition-all text-xs md:text-sm"
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Topic Vocab
+                      <span className="hidden sm:inline">Generate Topic Vocab</span>
+                      <span className="sm:hidden">Topic Vocab</span>
                     </Button>
                   )}
 
                   {/* Status if both exist */}
                   {essay.hasParaphraseVocab && essay.hasTopicVocab && (
-                    <div className="flex items-center text-sm text-green-600 font-medium">
+                    <div className="flex items-center text-xs md:text-sm text-green-600 font-medium">
                       <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                       All vocabulary generated
                     </div>
@@ -358,13 +360,13 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                 {/* Loading State - show below buttons */}
                 {(paraphraseLoading || topicLoading) && (
                   <Card className="border-ocean-300 bg-gradient-to-br from-ocean-50 to-cyan-50">
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-ocean-800">
+                    <CardContent className="pt-4 md:pt-6 px-4">
+                      <div className="space-y-3 md:space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <h3 className="text-sm md:text-base font-semibold text-ocean-800">
                             Generating {paraphraseLoading ? 'Paraphrase' : 'Topic'} Vocabulary
                           </h3>
-                          <div className="flex items-center gap-2 text-sm text-ocean-600">
+                          <div className="flex items-center gap-2 text-xs md:text-sm text-ocean-600">
                             <Clock className="h-4 w-4" />
                             <span>
                               {Math.floor((elapsedTime[paraphraseLoading ? paraphraseKey : topicKey] || 0) / 60)}:
@@ -373,30 +375,33 @@ export function VocabularyList({ essays }: VocabularyListProps) {
                           </div>
                         </div>
                         <Progress value={progress[paraphraseLoading ? paraphraseKey : topicKey] || 0} className="h-2" />
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className={`flex items-center gap-2 text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 33 ? 'text-green-600' : 'text-slate-400'}`}>
+                        <div className="grid grid-cols-3 gap-2 md:gap-3">
+                          <div className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 33 ? 'text-green-600' : 'text-slate-400'}`}>
                             {(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 33 ? (
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
                             ) : (
-                              <div className="h-4 w-4 rounded-full border-2 border-current" />
+                              <div className="h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-current" />
                             )}
-                            <span>Analyzing</span>
+                            <span className="hidden sm:inline">Analyzing</span>
+                            <span className="sm:hidden">1</span>
                           </div>
-                          <div className={`flex items-center gap-2 text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 66 ? 'text-green-600' : 'text-slate-400'}`}>
+                          <div className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 66 ? 'text-green-600' : 'text-slate-400'}`}>
                             {(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 66 ? (
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
                             ) : (
-                              <div className="h-4 w-4 rounded-full border-2 border-current" />
+                              <div className="h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-current" />
                             )}
-                            <span>Processing</span>
+                            <span className="hidden sm:inline">Processing</span>
+                            <span className="sm:hidden">2</span>
                           </div>
-                          <div className={`flex items-center gap-2 text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 95 ? 'text-green-600' : 'text-slate-400'}`}>
+                          <div className={`flex items-center gap-1 md:gap-2 text-xs md:text-sm ${(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 95 ? 'text-green-600' : 'text-slate-400'}`}>
                             {(progress[paraphraseLoading ? paraphraseKey : topicKey] || 0) >= 95 ? (
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
                             ) : (
-                              <div className="h-4 w-4 rounded-full border-2 border-current" />
+                              <div className="h-3 w-3 md:h-4 md:w-4 rounded-full border-2 border-current" />
                             )}
-                            <span>Finalizing</span>
+                            <span className="hidden sm:inline">Finalizing</span>
+                            <span className="sm:hidden">3</span>
                           </div>
                         </div>
                       </div>
@@ -418,12 +423,12 @@ export function VocabularyList({ essays }: VocabularyListProps) {
 
                 {/* Info Box */}
                 {!essay.hasParaphraseVocab || !essay.hasTopicVocab ? (
-                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4 text-sm text-cyan-800 shadow-sm">
+                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-3 md:p-4 text-xs md:text-sm text-cyan-800 shadow-sm">
                     <div className="flex items-center gap-2 font-semibold mb-2 text-cyan-700">
                       <Lightbulb className="w-4 h-4" />
                       <span>Vocabulary Types:</span>
                     </div>
-                    <ul className="space-y-2 ml-6 list-disc text-cyan-900">
+                    <ul className="space-y-1 md:space-y-2 ml-4 md:ml-6 list-disc text-cyan-900">
                       <li><strong>Paraphrase:</strong> Suggests better alternatives for low-level words in your essay</li>
                       <li><strong>Topic:</strong> Provides C1-C2 vocabulary specific to this essay's topic</li>
                     </ul>

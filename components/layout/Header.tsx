@@ -16,9 +16,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown, Users } from 'lucide-react'
+import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown, Users, Menu } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
 interface HeaderProps {
   user?: {
@@ -31,6 +39,7 @@ export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -48,15 +57,15 @@ export function Header({ user }: HeaderProps) {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <span className="text-4xl font-[family-name:var(--font-shrikhand)]">
+          <span className="text-2xl md:text-3xl lg:text-4xl font-[family-name:var(--font-shrikhand)]">
             <span className="text-cyan-400">IELTS</span>
             <span className="text-white">4Life</span>
           </span>
         </Link>
 
-        {/* Navigation */}
+        {/* Navigation - Desktop */}
         <TooltipProvider>
-          <nav className="flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1">
             {/* Dashboard - Show for all, tooltip for guests */}
             {user ? (
               <Link href="/dashboard">
@@ -189,14 +198,176 @@ export function Header({ user }: HeaderProps) {
           </nav>
         </TooltipProvider>
 
+        {/* Mobile Menu */}
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white hover:bg-ocean-800">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] bg-ocean-900 text-white border-l border-ocean-700">
+              <SheetHeader>
+                <SheetTitle className="text-left text-xl font-[family-name:var(--font-shrikhand)]">
+                  <span className="text-cyan-400">IELTS</span>
+                  <span className="text-white">4Life</span>
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-2 mt-6">
+                {/* Dashboard */}
+                {user ? (
+                  <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button
+                      variant={isActive('/dashboard') ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start ${isActive('/dashboard') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                    >
+                      <Home className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                    disabled
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Button>
+                )}
+
+                {/* Write Essay */}
+                <Link href="/write" onClick={() => setIsOpen(false)}>
+                  <Button
+                    variant={isActive('/write') ? 'secondary' : 'ghost'}
+                    className={`w-full justify-start ${isActive('/write') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Write Essay
+                  </Button>
+                </Link>
+
+                {/* History */}
+                {user ? (
+                  <Link href="/history" onClick={() => setIsOpen(false)}>
+                    <Button
+                      variant={isActive('/history') ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start ${isActive('/history') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                    >
+                      <History className="mr-2 h-4 w-4" />
+                      History
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                    disabled
+                  >
+                    <History className="mr-2 h-4 w-4" />
+                    History
+                  </Button>
+                )}
+
+                {/* Vocabulary */}
+                {user ? (
+                  <Link href="/vocabulary" onClick={() => setIsOpen(false)}>
+                    <Button
+                      variant={isActive('/vocabulary') ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start ${isActive('/vocabulary') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Vocabulary
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-white/60 hover:bg-ocean-800 cursor-not-allowed"
+                    disabled
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Vocabulary
+                  </Button>
+                )}
+
+                {/* Invite - Show for Free tier users only */}
+                {user && !isPro && (
+                  <Link href="/invite" onClick={() => setIsOpen(false)}>
+                    <Button
+                      variant={isActive('/invite') ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start ${isActive('/invite') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Invite
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Admin - Show for admin only */}
+                {user?.role === 'admin' && (
+                  <Link href="/admin" onClick={() => setIsOpen(false)}>
+                    <Button
+                      variant={isActive('/admin') ? 'secondary' : 'ghost'}
+                      className={`w-full justify-start ${isActive('/admin') ? 'text-ocean-700' : 'text-white hover:bg-ocean-800'}`}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Divider */}
+                <div className="border-t border-ocean-700 my-2" />
+
+                {/* User Actions */}
+                {user ? (
+                  <>
+                    <Link href="/subscription" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-white hover:bg-ocean-800">
+                        <Crown className="mr-2 h-4 w-4" />
+                        Subscription
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-red-400 hover:bg-ocean-800"
+                      onClick={() => {
+                        handleSignOut()
+                        setIsOpen(false)
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start text-white hover:bg-ocean-800">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full justify-start bg-cyan-500 hover:bg-cyan-600">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+
         {/* User Menu or Auth Buttons */}
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-2">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-white hover:bg-ocean-800">
-                  <User className="mr-2 h-4 w-4" />
-                  {user.email}
+                  <User className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">{user.email}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -220,13 +391,14 @@ export function Header({ user }: HeaderProps) {
           ) : (
             <>
               <Link href="/login">
-                <Button variant="ghost" className="text-white hover:bg-ocean-800">
+                <Button variant="ghost" className="text-white hover:bg-ocean-800 text-sm md:text-base px-2 md:px-4">
                   Login
                 </Button>
               </Link>
               <Link href="/register">
-                <Button className="bg-cyan-500 hover:bg-cyan-600">
-                  Get Started
+                <Button className="bg-cyan-500 hover:bg-cyan-600 text-sm md:text-base px-3 md:px-4">
+                  <span className="hidden sm:inline">Get Started</span>
+                  <span className="sm:hidden">Sign Up</span>
                 </Button>
               </Link>
             </>

@@ -169,12 +169,12 @@ export default function WritePage() {
         <div className="absolute bottom-1/3 left-1/2 h-5 w-5 rounded-full bg-sky-400/30 animate-float" style={{ animationDelay: '1.5s' }} />
       </div>
 
-      <div className="max-w-5xl mx-auto relative">
+      <div className="max-w-5xl mx-auto relative px-4">
         {/* Guest Banner */}
         {isGuest && !showGuestLimit && <GuestBanner />}
 
         {/* Hero Header Section */}
-        <div className="mb-8 space-y-6">
+        <div className="mb-6 md:mb-8 space-y-4 md:space-y-6">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-cyan-700 shadow-lg border border-cyan-100">
             <Sparkles className="h-4 w-4 text-cyan-500" />
@@ -182,50 +182,50 @@ export default function WritePage() {
           </div>
 
           {/* Title and Quota */}
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <h1 className="text-5xl font-black text-slate-900 mb-3 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 mb-2 md:mb-3 leading-tight">
                 Write Your <span className="bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 bg-clip-text text-transparent">Essay</span>
               </h1>
-              <p className="text-xl text-slate-600">Submit your IELTS Task 2 essay for instant AI-powered scoring</p>
+              <p className="text-base md:text-xl text-slate-600">Submit your IELTS Task 2 essay for instant AI-powered scoring</p>
             </div>
             {!isGuest && <QuotaDisplay />}
           </div>
 
           {/* Feature bullets */}
-          <div className="flex flex-wrap items-center gap-6 text-slate-700">
+          <div className="flex flex-wrap items-center gap-3 md:gap-6 text-slate-700">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-cyan-600" />
-              <span className="text-sm font-medium">Instant detailed feedback</span>
+              <CheckCircle className="h-4 md:h-5 w-4 md:w-5 text-cyan-600" />
+              <span className="text-xs md:text-sm font-medium">Instant detailed feedback</span>
             </div>
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-cyan-600" />
-              <span className="text-sm font-medium">4 IELTS criteria analyzed</span>
+              <Target className="h-4 md:h-5 w-4 md:w-5 text-cyan-600" />
+              <span className="text-xs md:text-sm font-medium">4 IELTS criteria analyzed</span>
             </div>
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-cyan-600" />
-              <span className="text-sm font-medium">Results in ~30 seconds</span>
+              <Zap className="h-4 md:h-5 w-4 md:w-5 text-cyan-600" />
+              <span className="text-xs md:text-sm font-medium">Results in ~30 seconds</span>
             </div>
           </div>
         </div>
 
         {/* Main Essay Card */}
         <Card className="border-0 bg-gradient-to-br from-white to-sky-50/30 shadow-2xl hover:shadow-2xl transition-shadow duration-300">
-          <CardHeader className="bg-gradient-to-r from-sky-50 to-cyan-50 border-b border-cyan-100">
+          <CardHeader className="bg-gradient-to-r from-sky-50 to-cyan-50 border-b border-cyan-100 p-4 md:p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50">
-                <FileText className="h-6 w-6 text-white" />
+              <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50">
+                <FileText className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-slate-900">Essay Submission</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="text-lg md:text-2xl text-slate-900">Essay Submission</CardTitle>
+                <CardDescription className="text-sm md:text-base">
                   Enter your prompt and essay below for AI analysis
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <CardContent className="pt-6 md:pt-8 p-4 md:p-6">
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
               {/* Essay Prompt Field */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ export default function WritePage() {
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-6 border-t border-cyan-100">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 md:gap-4 pt-4 md:pt-6 border-t border-cyan-100">
                 <Button
                   type="button"
                   variant="outline"
@@ -340,23 +340,24 @@ export default function WritePage() {
                     setError('')
                   }}
                   disabled={isSubmitting}
-                  className="border-2 border-cyan-200 text-slate-700 hover:bg-cyan-50 px-6 py-5 text-base rounded-xl"
+                  className="border-2 border-cyan-200 text-slate-700 hover:bg-cyan-50 px-4 py-3 md:px-6 md:py-5 text-sm md:text-base rounded-xl"
                 >
                   Clear
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting || !prompt.trim() || !essay.trim()}
-                  className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white shadow-2xl hover:shadow-cyan-500/50 transition-all duration-500 px-10 py-5 text-base font-bold rounded-xl"
+                  className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white shadow-2xl hover:shadow-cyan-500/50 transition-all duration-500 px-6 py-3 md:px-10 md:py-5 text-sm md:text-base font-bold rounded-xl"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Analyzing Essay...
+                      <Loader2 className="mr-2 h-4 md:h-5 w-4 md:w-5 animate-spin" />
+                      <span className="hidden sm:inline">Analyzing Essay...</span>
+                      <span className="sm:hidden">Analyzing...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-5 w-5 animate-pulse" />
+                      <Sparkles className="mr-2 h-4 md:h-5 w-4 md:w-5 animate-pulse" />
                       Score My Essay
                       <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
                     </>
@@ -420,15 +421,15 @@ export default function WritePage() {
         )}
 
         {/* Tips Card */}
-        <div className="mt-8 p-6 bg-gradient-to-br from-white to-cyan-50 border-2 border-cyan-200 rounded-2xl shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50">
-              <Award className="h-5 w-5 text-white" />
+        <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-br from-white to-cyan-50 border-2 border-cyan-200 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-3 mb-3 md:mb-4">
+            <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50">
+              <Award className="h-4 w-4 md:h-5 md:w-5 text-white" />
             </div>
-            <h3 className="font-bold text-slate-900 text-lg">IELTS Scoring Criteria</h3>
+            <h3 className="font-bold text-slate-900 text-base md:text-lg">IELTS Scoring Criteria</h3>
           </div>
-          <p className="text-sm text-slate-600 mb-4">Your essay will be evaluated on four key criteria:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <p className="text-xs md:text-sm text-slate-600 mb-3 md:mb-4">Your essay will be evaluated on four key criteria:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
             <div className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-cyan-100">
               <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-cyan-100 text-cyan-700 font-bold text-sm flex-shrink-0">1</span>
               <div>

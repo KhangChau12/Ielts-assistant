@@ -122,28 +122,28 @@ export default async function VocabularyPage() {
   const essays = await getEssaysWithVocabulary()
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-8 animate-fadeInUp">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-2">Vocabulary Builder</h1>
-        <p className="text-ocean-600">
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="mb-6 md:mb-8 animate-fadeInUp">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-2">Vocabulary Builder</h1>
+        <p className="text-sm md:text-base text-ocean-600">
           Generate and practice vocabulary from your essays
         </p>
       </div>
 
       {essays.length === 0 ? (
         <Card className="border-ocean-200 card-premium shadow-colored animate-fadeInUp">
-          <CardContent className="pt-12 pb-12 text-center">
+          <CardContent className="pt-8 pb-8 md:pt-12 md:pb-12 text-center px-4">
             <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="rounded-full bg-gradient-to-br from-ocean-100 to-cyan-100 p-6 shadow-md">
-                <BookOpen className="h-12 w-12 text-ocean-600" />
+              <div className="rounded-full bg-gradient-to-br from-ocean-100 to-cyan-100 p-4 md:p-6 shadow-md">
+                <BookOpen className="h-10 w-10 md:h-12 md:w-12 text-ocean-600" />
               </div>
-              <h3 className="text-xl font-semibold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent">No Essays Yet</h3>
-              <p className="text-ocean-600 max-w-md">
+              <h3 className="text-lg md:text-xl font-semibold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent">No Essays Yet</h3>
+              <p className="text-sm md:text-base text-ocean-600 max-w-md px-4">
                 You need to submit at least one essay before you can generate vocabulary.
                 Head over to the Write page to get started!
               </p>
               <Link href="/write">
-                <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white mt-4 shadow-md hover:shadow-lg transition-all">
+                <Button className="bg-gradient-to-r from-ocean-600 to-cyan-600 hover:from-ocean-700 hover:to-cyan-700 text-white mt-4 shadow-md hover:shadow-lg transition-all text-sm md:text-base">
                   <FileText className="mr-2 h-4 w-4" />
                   Write an Essay
                 </Button>
@@ -155,9 +155,9 @@ export default async function VocabularyPage() {
         <VocabularyList essays={essays} />
       )}
 
-      <div className="mt-8 p-6 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg shadow-sm animate-fadeInUp">
-        <h3 className="font-semibold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-3">About Vocabulary Builder</h3>
-        <div className="text-sm text-ocean-700 space-y-3">
+      <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg shadow-sm animate-fadeInUp">
+        <h3 className="text-base md:text-lg font-semibold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent mb-3">About Vocabulary Builder</h3>
+        <div className="text-xs md:text-sm text-ocean-700 space-y-2 md:space-y-3">
           <p>
             <strong>Paraphrase Vocabulary:</strong> Generates alternative words and phrases for vocabulary used in your essay,
             helping you expand your lexical resource.

@@ -301,45 +301,45 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 px-4">
       {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-ocean-800 mb-2">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-ocean-800 mb-2">
           Welcome back, {userName}!
         </h1>
-        <p className="text-ocean-600 text-lg">
+        <p className="text-ocean-600 text-base md:text-lg">
           Track your progress and improve your IELTS writing skills
         </p>
       </div>
 
       {/* Quick Stats Cards */}
       {stats.totalEssays > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <Card className="border-ocean-200 shadow-lg bg-gradient-to-br from-ocean-100 to-cyan-100">
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ocean-600 mb-1">Total Essays</p>
-                  <p className="text-4xl font-bold text-ocean-800">{stats.totalEssays}</p>
+                  <p className="text-xs md:text-sm font-medium text-ocean-600 mb-1">Total Essays</p>
+                  <p className="text-3xl md:text-4xl font-bold text-ocean-800">{stats.totalEssays}</p>
                 </div>
-                <div className="rounded-full bg-ocean-200/50 p-3">
-                  <FileText className="h-8 w-8 text-ocean-600" />
+                <div className="rounded-full bg-ocean-200/50 p-2 md:p-3">
+                  <FileText className="h-6 w-6 md:h-8 md:w-8 text-ocean-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-green-200 shadow-lg bg-gradient-to-br from-emerald-100 to-teal-100">
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-emerald-600 mb-1">Average Band Score</p>
-                  <p className="text-4xl font-bold text-emerald-800">
+                  <p className="text-xs md:text-sm font-medium text-emerald-600 mb-1">Average Band Score</p>
+                  <p className="text-3xl md:text-4xl font-bold text-emerald-800">
                     {stats.averageScore?.toFixed(1) ?? '0.0'}
                   </p>
                 </div>
-                <div className="rounded-full bg-emerald-200/50 p-3">
-                  <Award className="h-8 w-8 text-emerald-600" />
+                <div className="rounded-full bg-emerald-200/50 p-2 md:p-3">
+                  <Award className="h-6 w-6 md:h-8 md:w-8 text-emerald-600" />
                 </div>
               </div>
             </CardContent>
@@ -350,18 +350,18 @@ export default async function DashboardPage() {
       {/* Empty State - First Time User */}
       {stats.totalEssays === 0 && (
         <Card className="border-ocean-200 shadow-lg bg-gradient-to-br from-ocean-50 to-cyan-50">
-          <CardContent className="py-12">
+          <CardContent className="py-8 md:py-12 px-4 md:px-6">
             <div className="text-center">
-              <FileText className="h-20 w-20 mx-auto mb-4 text-ocean-400" />
-              <h2 className="text-2xl font-bold text-ocean-800 mb-2">Start Your IELTS Journey!</h2>
-              <p className="text-ocean-600 mb-6 max-w-md mx-auto">
+              <FileText className="h-16 w-16 md:h-20 md:w-20 mx-auto mb-4 text-ocean-400" />
+              <h2 className="text-xl md:text-2xl font-bold text-ocean-800 mb-2">Start Your IELTS Journey!</h2>
+              <p className="text-sm md:text-base text-ocean-600 mb-6 max-w-md mx-auto px-4">
                 Submit your first essay to get AI-powered feedback, personalized vocabulary, and track your progress
               </p>
               <a
                 href="/write"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-ocean-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-ocean-700 hover:to-cyan-700 transition-all"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-ocean-600 to-cyan-600 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-lg text-sm md:text-base font-semibold hover:from-ocean-700 hover:to-cyan-700 transition-all"
               >
-                <FileText className="h-5 w-5" />
+                <FileText className="h-4 w-4 md:h-5 md:w-5" />
                 Write Your First Essay
               </a>
             </div>

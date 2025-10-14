@@ -13,7 +13,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section - Redesigned with brighter colors and modern layout */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 py-20 lg:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 py-12 md:py-20 lg:py-24">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Large gradient orbs */}
@@ -31,7 +31,7 @@ export default async function HomePage() {
 
         <div className="container relative z-10 mx-auto px-4">
           <div className="mx-auto max-w-5xl">
-            <div className="text-center space-y-7">
+            <div className="text-center space-y-4 md:space-y-7">
               {/* Trust badge */}
               <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-sm px-4 py-2 text-sm font-medium text-cyan-700 shadow-lg border border-cyan-100">
                 <Sparkles className="h-4 w-4 text-cyan-500" />
@@ -39,7 +39,7 @@ export default async function HomePage() {
               </div>
 
               {/* Main heading */}
-              <h1 className="text-5xl font-black leading-tight tracking-tight text-slate-900 md:text-6xl lg:text-7xl">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight text-slate-900">
                 Master IELTS Writing
                 <br />
                 <span className="bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 bg-clip-text text-transparent">
@@ -48,35 +48,36 @@ export default async function HomePage() {
               </h1>
 
               {/* Subheading */}
-              <p className="mx-auto max-w-2xl text-xl leading-relaxed text-slate-600 md:text-2xl">
+              <p className="mx-auto max-w-2xl text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed text-slate-600 px-4">
                 Get instant, expert-level feedback on your essays. Track progress, enhance vocabulary, and achieve your target band score with AI.
               </p>
 
               {/* CTA Button for guests */}
               {!user && (
-                <div className="flex flex-col items-center gap-4 pt-4">
+                <div className="flex flex-col items-center gap-3 md:gap-4 pt-2 md:pt-4">
                   <Link href="/write">
                     <Button
                       size="lg"
-                      className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white shadow-2xl hover:shadow-cyan-500/50 transition-all duration-500 px-10 py-7 text-xl font-bold rounded-2xl"
+                      className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white shadow-2xl hover:shadow-cyan-500/50 transition-all duration-500 px-6 py-4 md:px-10 md:py-7 text-base md:text-xl font-bold rounded-xl md:rounded-2xl"
                     >
-                      <Sparkles className="mr-2 h-6 w-6 animate-pulse" />
-                      Try Free Essay Scoring Now
+                      <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6 animate-pulse" />
+                      <span className="hidden sm:inline">Try Free Essay Scoring Now</span>
+                      <span className="sm:hidden">Try Free Now</span>
                       <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
                     </Button>
                   </Link>
-                  <p className="flex items-center gap-2 text-sm text-slate-500">
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
-                    No sign-up required • Instant results in 30 seconds
+                  <p className="flex items-center gap-2 text-xs md:text-sm text-slate-500 px-4 text-center">
+                    <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span>No sign-up required • Instant results in 30 seconds</span>
                   </p>
                 </div>
               )}
 
               {/* Real feature badge - keep only real info */}
-              <div className="flex items-center justify-center pt-6">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-cyan-200 shadow-sm">
+              <div className="flex items-center justify-center pt-4 md:pt-6">
+                <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white/60 backdrop-blur-sm border border-cyan-200 shadow-sm">
                   <Zap className="h-4 w-4 text-cyan-600" />
-                  <span className="text-sm font-medium text-slate-700">Instant AI-Powered Feedback</span>
+                  <span className="text-xs md:text-sm font-medium text-slate-700">Instant AI-Powered Feedback</span>
                 </div>
               </div>
             </div>
@@ -85,22 +86,22 @@ export default async function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-24">
+      <section className="bg-white py-12 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="mb-16 text-center space-y-4">
+          <div className="mb-8 md:mb-16 text-center space-y-3 md:space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700">
               <Target className="h-4 w-4" />
               Everything You Need
             </div>
-            <h2 className="text-4xl font-black text-slate-900 md:text-5xl lg:text-6xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900">
               Comprehensive IELTS Tools
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-slate-600">
+            <p className="mx-auto max-w-2xl text-sm md:text-base lg:text-lg text-slate-600 px-4">
               All the features you need to excel in IELTS Writing Task 2
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Feature 1 */}
             <Card className="group border-0 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="space-y-4">
@@ -183,57 +184,57 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-cyan-50/50 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-cyan-50/50 py-12 md:py-24">
         <div className="container relative z-10 mx-auto px-4">
-          <div className="mb-16 text-center space-y-4">
+          <div className="mb-8 md:mb-16 text-center space-y-3 md:space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-cyan-700 shadow-lg">
               <Zap className="h-4 w-4" />
               Simple Process
             </div>
-            <h2 className="text-4xl font-black text-slate-900 md:text-5xl lg:text-6xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900">
               How It Works
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-slate-600">
+            <p className="mx-auto max-w-2xl text-sm md:text-base lg:text-lg text-slate-600 px-4">
               Three simple steps to improve your IELTS writing
             </p>
           </div>
 
           <div className="mx-auto max-w-4xl">
-            <div className="space-y-8">
+            <div className="space-y-4 md:space-y-8">
               {/* Step 1 */}
-              <div className="group flex items-start gap-6 rounded-3xl bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 text-2xl font-black text-white shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
+              <div className="group flex items-start gap-4 md:gap-6 rounded-2xl md:rounded-3xl bg-white p-4 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
+                <div className="flex h-12 w-12 md:h-16 md:w-16 flex-shrink-0 items-center justify-center rounded-xl md:rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 text-xl md:text-2xl font-black text-white shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
                   1
                 </div>
                 <div className="flex-1">
-                  <h3 className="mb-3 text-2xl font-bold text-slate-900">Submit Your Essay</h3>
-                  <p className="text-lg leading-relaxed text-slate-600">
+                  <h3 className="mb-2 md:mb-3 text-lg md:text-2xl font-bold text-slate-900">Submit Your Essay</h3>
+                  <p className="text-sm md:text-base lg:text-lg leading-relaxed text-slate-600">
                     Enter the essay prompt and paste your writing. Our AI examiner analyzes it using official IELTS band descriptors.
                   </p>
                 </div>
               </div>
 
               {/* Step 2 */}
-              <div className="group flex items-start gap-6 rounded-3xl bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 text-2xl font-black text-white shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
+              <div className="group flex items-start gap-4 md:gap-6 rounded-2xl md:rounded-3xl bg-white p-4 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
+                <div className="flex h-12 w-12 md:h-16 md:w-16 flex-shrink-0 items-center justify-center rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 text-xl md:text-2xl font-black text-white shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
                   2
                 </div>
                 <div className="flex-1">
-                  <h3 className="mb-3 text-2xl font-bold text-slate-900">Get Instant Feedback</h3>
-                  <p className="text-lg leading-relaxed text-slate-600">
+                  <h3 className="mb-2 md:mb-3 text-lg md:text-2xl font-bold text-slate-900">Get Instant Feedback</h3>
+                  <p className="text-sm md:text-base lg:text-lg leading-relaxed text-slate-600">
                     Receive detailed scores for all 4 criteria, specific error identification, and expert comments on improvement areas.
                   </p>
                 </div>
               </div>
 
               {/* Step 3 */}
-              <div className="group flex items-start gap-6 rounded-3xl bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-2xl font-black text-white shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform duration-300">
+              <div className="group flex items-start gap-4 md:gap-6 rounded-2xl md:rounded-3xl bg-white p-4 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300">
+                <div className="flex h-12 w-12 md:h-16 md:w-16 flex-shrink-0 items-center justify-center rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-xl md:text-2xl font-black text-white shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform duration-300">
                   3
                 </div>
                 <div className="flex-1">
-                  <h3 className="mb-3 text-2xl font-bold text-slate-900">Learn & Improve</h3>
-                  <p className="text-lg leading-relaxed text-slate-600">
+                  <h3 className="mb-2 md:mb-3 text-lg md:text-2xl font-bold text-slate-900">Learn & Improve</h3>
+                  <p className="text-sm md:text-base lg:text-lg leading-relaxed text-slate-600">
                     Track progress, enhance vocabulary with AI suggestions, and use flashcards and quizzes to reinforce learning.
                   </p>
                 </div>
@@ -248,7 +249,7 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section - Enhanced with more visual elements */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-500 via-blue-500 to-cyan-600 py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-500 via-blue-500 to-cyan-600 py-12 md:py-24">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Large gradient orbs */}
@@ -267,28 +268,28 @@ export default async function HomePage() {
         </div>
 
         <div className="container relative z-10 mx-auto px-4 text-center">
-          <div className="mx-auto max-w-3xl space-y-8">
+          <div className="mx-auto max-w-3xl space-y-5 md:space-y-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white border border-white/30">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-white border border-white/30">
               <Sparkles className="h-4 w-4" />
               Start Your Journey Today
             </div>
 
-            <h2 className="text-4xl font-black leading-tight text-white md:text-6xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight text-white">
               Ready to Achieve Your
               <br />
               Target Band Score?
             </h2>
-            <p className="text-xl leading-relaxed text-cyan-50 md:text-2xl">
+            <p className="text-base md:text-xl lg:text-2xl leading-relaxed text-cyan-50 px-4">
               Start improving your IELTS writing with AI-powered feedback
             </p>
-            <div className="pt-4">
+            <div className="pt-2 md:pt-4">
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="group relative overflow-hidden bg-white text-cyan-600 hover:bg-cyan-50 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-white/50 px-10 py-7 text-xl font-bold rounded-2xl"
+                  className="group relative overflow-hidden bg-white text-cyan-600 hover:bg-cyan-50 hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-white/50 px-6 py-4 md:px-10 md:py-7 text-base md:text-xl font-bold rounded-xl md:rounded-2xl"
                 >
-                  <Sparkles className="mr-2 h-5 w-5" />
+                  <Sparkles className="mr-2 h-4 md:h-5 w-4 md:w-5" />
                   Get Started Free
                   <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
                 </Button>
@@ -296,18 +297,18 @@ export default async function HomePage() {
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-white/90">
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 pt-2 md:pt-4 text-white/90">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-cyan-200" />
-                <span className="text-sm font-medium">Free to start</span>
+                <CheckCircle className="h-4 md:h-5 w-4 md:w-5 text-cyan-200" />
+                <span className="text-xs md:text-sm font-medium">Free to start</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-cyan-200" />
-                <span className="text-sm font-medium">No credit card</span>
+                <CheckCircle className="h-4 md:h-5 w-4 md:w-5 text-cyan-200" />
+                <span className="text-xs md:text-sm font-medium">No credit card</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-cyan-200" />
-                <span className="text-sm font-medium">6 free essays</span>
+                <CheckCircle className="h-4 md:h-5 w-4 md:w-5 text-cyan-200" />
+                <span className="text-xs md:text-sm font-medium">6 free essays</span>
               </div>
             </div>
           </div>
