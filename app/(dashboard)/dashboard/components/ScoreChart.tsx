@@ -72,16 +72,16 @@ export function ScoreChart({ data }: ScoreChartProps) {
           <Line
             type="monotone"
             dataKey="score"
-            stroke="#06b6d4"
+            stroke="#67e8f9"
             strokeWidth={3}
             dot={{
-              fill: '#06b6d4',
+              fill: '#67e8f9',
               strokeWidth: 2,
               r: 5,
               stroke: '#ffffff',
             }}
             activeDot={{
-              fill: '#0891b2',
+              fill: '#22d3ee',
               strokeWidth: 2,
               r: 7,
               stroke: '#ffffff',

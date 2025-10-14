@@ -159,23 +159,23 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     }, [])
     .slice(-14) || []
 
-  // Token usage pie chart data - Lighter, more vibrant colors
+  // Token usage pie chart data - Soft pastel colors
   const tokenPieData = [
-    { name: 'Input Tokens', value: stats.totalInputTokens, color: '#22d3ee' }, // Light cyan
-    { name: 'Output Tokens', value: stats.totalOutputTokens, color: '#a78bfa' }, // Light purple
+    { name: 'Input Tokens', value: stats.totalInputTokens, color: '#67e8f9' }, // cyan-300
+    { name: 'Output Tokens', value: stats.totalOutputTokens, color: '#c4b5fd' }, // violet-300
   ]
 
-  // User type distribution pie chart data - Lighter, more vibrant colors
+  // User type distribution pie chart data - Soft pastel colors
   const userTypeData = [
-    { name: 'Free Users', value: stats.totalUsers - stats.ptnkUsers - stats.paidProUsers, color: '#67e8f9' }, // Light cyan
-    { name: 'PTNK Students', value: stats.ptnkUsers, color: '#6ee7b7' }, // Light green
-    { name: 'Paid Pro', value: stats.paidProUsers, color: '#fbbf24' }, // Light amber
+    { name: 'Free Users', value: stats.totalUsers - stats.ptnkUsers - stats.paidProUsers, color: '#93c5fd' }, // blue-300
+    { name: 'PTNK Students', value: stats.ptnkUsers, color: '#6ee7b7' }, // emerald-300
+    { name: 'Paid Pro', value: stats.paidProUsers, color: '#fcd34d' }, // amber-300
   ]
 
   const COLORS = {
-    ocean: ['#22d3ee', '#67e8f9', '#86efac', '#a78bfa'],
-    users: ['#67e8f9', '#6ee7b7', '#fbbf24'],
-    tokens: ['#22d3ee', '#a78bfa'],
+    ocean: ['#67e8f9', '#93c5fd', '#6ee7b7', '#c4b5fd'],
+    users: ['#93c5fd', '#6ee7b7', '#fcd34d'],
+    tokens: ['#67e8f9', '#c4b5fd'],
   }
 
   return (
@@ -252,7 +252,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
               <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#93c5fd' }}></div>
                 <span className="text-ocean-700">Free: <strong>{stats.totalUsers - stats.ptnkUsers - stats.paidProUsers}</strong></span>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
@@ -260,7 +260,7 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <span className="text-ocean-700">PTNK: <strong>{stats.ptnkUsers}</strong></span>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#fbbf24' }}></div>
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#fcd34d' }}></div>
                 <span className="text-ocean-700">Paid Pro: <strong>{stats.paidProUsers}</strong></span>
               </div>
             </div>
@@ -321,11 +321,11 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
             </ResponsiveContainer>
             <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
               <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#22d3ee' }}></div>
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
                 <span className="text-ocean-700">Input: <strong>{formatNumber(stats.totalInputTokens)}</strong></span>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#a78bfa' }}></div>
+                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#c4b5fd' }}></div>
                 <span className="text-ocean-700">Output: <strong>{formatNumber(stats.totalOutputTokens)}</strong></span>
               </div>
             </div>
@@ -464,10 +464,10 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                   />
                   <Bar
                     dataKey="count"
-                    fill="#22d3ee"
+                    fill="#67e8f9"
                     name="Essays"
                     radius={[8, 8, 0, 0]}
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(34, 211, 238, 0.3))' }}
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(103, 232, 249, 0.3))' }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -555,12 +555,12 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Line
                   type="monotone"
                   dataKey="essays"
-                  stroke="#22d3ee"
+                  stroke="#67e8f9"
                   strokeWidth={3}
-                  dot={{ fill: '#22d3ee', r: 5, filter: 'drop-shadow(0 0 4px rgba(34, 211, 238, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#22d3ee', filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.6))' }}
+                  dot={{ fill: '#67e8f9', r: 5, filter: 'drop-shadow(0 0 4px rgba(103, 232, 249, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#67e8f9', filter: 'drop-shadow(0 0 6px rgba(103, 232, 249, 0.6))' }}
                   name="Total Essays"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.3))' }}
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(103, 232, 249, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -606,12 +606,12 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Line
                   type="monotone"
                   dataKey="avgPercentage"
-                  stroke="#34d399"
+                  stroke="#6ee7b7"
                   strokeWidth={3}
-                  dot={{ fill: '#34d399', r: 5, filter: 'drop-shadow(0 0 4px rgba(52, 211, 153, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#34d399', filter: 'drop-shadow(0 0 6px rgba(52, 211, 153, 0.6))' }}
+                  dot={{ fill: '#6ee7b7', r: 5, filter: 'drop-shadow(0 0 4px rgba(110, 231, 183, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#6ee7b7', filter: 'drop-shadow(0 0 6px rgba(110, 231, 183, 0.6))' }}
                   name="Average Score"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(52, 211, 153, 0.3))' }}
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(110, 231, 183, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -658,12 +658,12 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Line
                   type="monotone"
                   dataKey="count"
-                  stroke="#06b6d4"
+                  stroke="#67e8f9"
                   strokeWidth={3}
-                  dot={{ fill: '#06b6d4', r: 5, filter: 'drop-shadow(0 0 4px rgba(6, 182, 212, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#06b6d4', filter: 'drop-shadow(0 0 6px rgba(6, 182, 212, 0.6))' }}
+                  dot={{ fill: '#67e8f9', r: 5, filter: 'drop-shadow(0 0 4px rgba(103, 232, 249, 0.5))' }}
+                  activeDot={{ r: 7, fill: '#67e8f9', filter: 'drop-shadow(0 0 6px rgba(103, 232, 249, 0.6))' }}
                   name="Total Users"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(6, 182, 212, 0.3))' }}
+                  style={{ filter: 'drop-shadow(0 0 3px rgba(103, 232, 249, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>

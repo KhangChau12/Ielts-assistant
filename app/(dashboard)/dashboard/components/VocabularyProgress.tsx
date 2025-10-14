@@ -25,8 +25,8 @@ export function VocabularyProgress({
 }: VocabularyProgressProps) {
   // Pie chart data for quiz performance
   const quizData = [
-    { name: 'Correct', value: totalCorrect, color: '#10b981' },
-    { name: 'Incorrect', value: totalQuestions - totalCorrect, color: '#f59e0b' },
+    { name: 'Correct', value: totalCorrect, color: '#6ee7b7' }, // emerald-300 - soft green
+    { name: 'Incorrect', value: totalQuestions - totalCorrect, color: '#fcd34d' }, // amber-300 - soft yellow
   ]
 
   // Empty state

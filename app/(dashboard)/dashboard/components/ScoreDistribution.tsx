@@ -144,36 +144,36 @@ export function ScoreDistribution({ scoreDistribution, criteriaOverTime, hasEssa
                     <Line
                       type="monotone"
                       dataKey="taskResponse"
-                      stroke="#60a5fa"
+                      stroke="#93c5fd"
                       strokeWidth={2}
-                      dot={{ fill: '#60a5fa', r: 4 }}
+                      dot={{ fill: '#93c5fd', r: 4 }}
                       name="Task Response"
                       connectNulls
                     />
                     <Line
                       type="monotone"
                       dataKey="coherence"
-                      stroke="#34d399"
+                      stroke="#6ee7b7"
                       strokeWidth={2}
-                      dot={{ fill: '#34d399', r: 4 }}
+                      dot={{ fill: '#6ee7b7', r: 4 }}
                       name="Coherence"
                       connectNulls
                     />
                     <Line
                       type="monotone"
                       dataKey="vocabulary"
-                      stroke="#fbbf24"
+                      stroke="#fcd34d"
                       strokeWidth={2}
-                      dot={{ fill: '#fbbf24', r: 4 }}
+                      dot={{ fill: '#fcd34d', r: 4 }}
                       name="Vocabulary"
                       connectNulls
                     />
                     <Line
                       type="monotone"
                       dataKey="grammar"
-                      stroke="#f472b6"
+                      stroke="#f9a8d4"
                       strokeWidth={2}
-                      dot={{ fill: '#f472b6', r: 4 }}
+                      dot={{ fill: '#f9a8d4', r: 4 }}
                       name="Grammar"
                       connectNulls
                     />
@@ -200,11 +200,11 @@ export function ScoreDistribution({ scoreDistribution, criteriaOverTime, hasEssa
 }
 
 function getBandColor(band: number): string {
-  if (band >= 8) return '#10b981' // green-500
-  if (band >= 7) return '#06b6d4' // cyan-500
-  if (band >= 6) return '#3b82f6' // blue-500
-  if (band >= 5) return '#f59e0b' // amber-500
-  return '#ef4444' // red-500
+  if (band >= 8) return '#6ee7b7' // emerald-300 - pastel green
+  if (band >= 7) return '#67e8f9' // cyan-300 - light cyan
+  if (band >= 6) return '#93c5fd' // blue-300 - soft blue
+  if (band >= 5) return '#fcd34d' // amber-300 - pastel yellow
+  return '#fca5a5' // red-300 - soft red
 }
 
 function calculateAverage(distribution: { [key: number]: number }): number {

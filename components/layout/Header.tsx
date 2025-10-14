@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Home, FileText, BookOpen, User, LogOut, Settings, History, Crown, Users, Menu } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
@@ -43,6 +43,8 @@ export function Header({ user }: HeaderProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
+    // Reset singleton client to clear cached auth state
+    resetClient()
     router.push('/login')
     router.refresh()
   }
