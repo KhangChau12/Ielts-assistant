@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { createGroqClient, MODELS } from '@/lib/openai/client'
 import { ESSAY_IMPROVEMENT_PROMPT } from '@/lib/openai/prompts'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
@@ -76,22 +77,22 @@ export async function POST(request: Request) {
       completion.choices[0].message.content || '{}'
     )
 
-    console.log('=== IMPROVEMENT API DEBUG ===')
-    console.log('OpenAI Response keys:', Object.keys(result))
-    console.log('Has improved_essay:', !!result.improved_essay)
-    console.log('Has changes:', !!result.changes)
-    console.log('Changes type:', typeof result.changes)
-    console.log('Changes is array:', Array.isArray(result.changes))
+    logger.debug('=== IMPROVEMENT API DEBUG ===')
+    logger.debug('OpenAI Response keys:', Object.keys(result))
+    logger.debug('Has improved_essay:', !!result.improved_essay)
+    logger.debug('Has changes:', !!result.changes)
+    logger.debug('Changes type:', typeof result.changes)
+    logger.debug('Changes is array:', Array.isArray(result.changes))
 
     const improved_essay = result.improved_essay
     const changes = result.changes || []
 
-    console.log('Parsed changes count:', changes.length)
-    console.log('Changes sample:', JSON.stringify(changes.slice(0, 3), null, 2))
+    logger.debug('Parsed changes count:', changes.length)
+    logger.debug('Changes sample:', JSON.stringify(changes.slice(0, 3), null, 2))
 
     // Validate changes is an array
     if (!Array.isArray(changes)) {
-      console.error('WARNING: changes is not an array!', typeof changes)
+      logger.error('WARNING: changes is not an array!', typeof changes)
     }
 
     // Save improved essay and changes to database
@@ -105,24 +106,24 @@ export async function POST(request: Request) {
       .select('id, improved_essay, improvement_changes')
 
     if (updateError) {
-      console.error('Error saving improved essay:', updateError)
-      console.error('Update error details:', JSON.stringify(updateError, null, 2))
+      logger.error('Error saving improved essay:', updateError)
+      logger.error('Update error details:', JSON.stringify(updateError, null, 2))
       return NextResponse.json(
         { error: 'Failed to save improved essay' },
         { status: 500 }
       )
     }
 
-    console.log('Database update successful:', !!updateData)
-    console.log('Update data:', updateData)
+    logger.debug('Database update successful:', !!updateData)
+    logger.debug('Update data:', updateData)
     if (updateData && updateData[0]) {
-      console.log('Has improvement_changes in DB:', !!updateData[0].improvement_changes)
-      console.log('Changes count in DB:', updateData[0].improvement_changes?.length || 0)
-      console.log('Saved changes to DB: YES')
+      logger.debug('Has improvement_changes in DB:', !!updateData[0].improvement_changes)
+      logger.debug('Changes count in DB:', updateData[0].improvement_changes?.length || 0)
+      logger.debug('Saved changes to DB: YES')
     } else {
-      console.log('Saved changes to DB: NO - updateData is empty')
+      logger.debug('Saved changes to DB: NO - updateData is empty')
     }
-    console.log('=============================')
+    logger.debug('=============================')
 
     // Log token usage (only for authenticated users)
     if (user) {
@@ -141,7 +142,7 @@ export async function POST(request: Request) {
       changes,
     })
   } catch (error) {
-    console.error('Error improving essay:', error)
+    logger.error('Error improving essay:', error)
     return NextResponse.json(
       { error: 'Failed to improve essay' },
       { status: 500 }

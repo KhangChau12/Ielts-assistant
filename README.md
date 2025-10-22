@@ -77,11 +77,25 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # OpenAI
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-4-turbo-preview
+
+# Groq API Keys (supports multiple keys for rate limit rotation)
+GROQ_API_KEY_1=your_first_groq_api_key
+GROQ_API_KEY_2=your_second_groq_api_key
+GROQ_API_KEY_3=your_third_groq_api_key
+
+# Upstash Redis (optional for development, required for production)
+# Sign up at https://upstash.com/ and create a Redis database
+UPSTASH_REDIS_REST_URL=your_upstash_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**Note on Rate Limiting:**
+- Upstash Redis is **optional** in development (requests will be allowed if not configured)
+- **Highly recommended** for production to prevent API abuse
+- Free tier available at [upstash.com](https://upstash.com/)
 
 ### 3. Set Up Database
 

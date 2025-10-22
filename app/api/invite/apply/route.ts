@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { cleanInviteCode, INVITE_BONUSES } from '@/lib/invite/utils'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     console.log('[Invite Apply] Inviter lookup:', { inviter, inviterError })
 
     if (inviterError || !inviter) {
-      console.log('[Invite Apply] Invalid invite code')
+      logger.auth('Invalid invite code')
       return NextResponse.json(
         { error: 'Invalid invite code' },
         { status: 404 }
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
     }
 
     // Start transaction to apply bonuses
-    console.log('[Invite Apply] Starting bonus application...')
+    logger.auth('Starting bonus application...')
 
     // 1. Update invited user (current user)
     const { error: invitedUpdateError } = await supabase
@@ -135,10 +136,10 @@ export async function POST(request: Request) {
 
     if (inviteRecordError) {
       // Log but don't fail - bonuses already applied
-      console.error('[Invite Apply] Failed to record invite:', inviteRecordError)
+      logger.error('[Invite Apply] Failed to record invite:', inviteRecordError)
     }
 
-    console.log('[Invite Apply] SUCCESS! Bonus applied.')
+    logger.auth('SUCCESS! Bonus applied.')
 
     return NextResponse.json({
       success: true,
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('[Invite Apply] ERROR:', error)
+    logger.error('[Invite Apply] ERROR:', error)
     return NextResponse.json(
       { error: 'Failed to apply invite bonus' },
       { status: 500 }

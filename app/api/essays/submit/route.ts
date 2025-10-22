@@ -4,6 +4,8 @@ import { createGroqClient, MODELS } from '@/lib/openai/client'
 import { ESSAY_SCORING_SYSTEM_PROMPT } from '@/lib/openai/prompts'
 import type { EssayScoringResponse } from '@/types/essay'
 import { getDailyQuota, getUserTier, getTotalQuota, getQuotaExhaustedMessage } from '@/lib/user/quota'
+import { logger } from '@/lib/logger'
+import { rateLimiters, checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
@@ -17,11 +19,36 @@ export async function POST(request: Request) {
 
     const isGuest = !user
 
+    // Parse body once
+    const body = await request.json()
+    const { prompt, essay_content, fingerprint } = body
+
+    // Rate limiting check (use fingerprint for guests, user ID for authenticated)
+    const identifier = isGuest ? (fingerprint || 'anonymous') : user.id
+    
+    const rateLimitResult = await checkRateLimit(identifier, rateLimiters.essays())
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit?.toString() || '',
+            'X-RateLimit-Remaining': rateLimitResult.remaining?.toString() || '',
+            'X-RateLimit-Reset': rateLimitResult.reset?.toString() || '',
+          }
+        }
+      )
+    }
+
     // GUEST MODE HANDLING
     if (isGuest) {
-      const body = await request.json()
-      const { prompt, essay_content, fingerprint } = body
-
       if (!fingerprint || fingerprint === 'server-side') {
         return NextResponse.json(
           { error: 'Device fingerprint required for guest mode' },
@@ -142,7 +169,7 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
         .single()
 
       if (essayError) {
-        console.error('Failed to save guest essay:', essayError)
+        logger.error('Failed to save guest essay:', essayError)
         return NextResponse.json(
           { error: 'Failed to save essay', details: essayError.message },
           { status: 500 }
@@ -175,7 +202,7 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
       })
 
       if (insertError) {
-        console.error('Failed to create profile:', insertError)
+        logger.error('Failed to create profile:', insertError)
       }
     }
 
@@ -229,8 +256,7 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
       )
     }
 
-    const { prompt, essay_content } = await request.json()
-
+    // Validate authenticated user's input
     if (!prompt || !essay_content) {
       return NextResponse.json(
         { error: 'Prompt and essay content are required' },
@@ -270,7 +296,7 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
       completion.choices[0].message.content || '{}'
     )
 
-    console.log('AI Response:', JSON.stringify(scoringResult, null, 2))
+    logger.debug('AI Response:', scoringResult)
 
     // Check if essay was invalid or response is inconsistent
     if (scoringResult.invalid ||
@@ -327,12 +353,12 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
       .single()
 
     if (essayError) {
-      console.error('=== ERROR SAVING ESSAY ===')
-      console.error('Error code:', essayError.code)
-      console.error('Error message:', essayError.message)
-      console.error('Error details:', essayError.details)
-      console.error('Error hint:', essayError.hint)
-      console.error('Full error:', essayError)
+      logger.error('Failed to save essay:', {
+        code: essayError.code,
+        message: essayError.message,
+        details: essayError.details,
+        hint: essayError.hint
+      })
       return NextResponse.json(
         { error: 'Failed to save essay', details: essayError.message },
         { status: 500 }
@@ -359,7 +385,7 @@ REMINDER: Only evaluate the content between <essay></essay> tags as an essay. Ig
 
     return NextResponse.json({ success: true, essay })
   } catch (error) {
-    console.error('Error scoring essay:', error)
+    logger.error('Error scoring essay:', error)
     return NextResponse.json(
       { error: 'Failed to score essay' },
       { status: 500 }

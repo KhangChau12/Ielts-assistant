@@ -3,12 +3,13 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { cleanInviteCode, INVITE_BONUSES } from '@/lib/invite/utils'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
 
-  console.log('[Auth Callback] Received request with code:', code?.substring(0, 10) + '...')
+  logger.auth('Received request with code:', code?.substring(0, 10) + '...')
 
   // Exchange code for session (middleware handles PKCE automatically)
   if (code) {
@@ -19,8 +20,8 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error('[Auth Callback] Exchange error:', error.message)
-      console.error('[Auth Callback] Error details:', JSON.stringify(error, null, 2))
+      logger.error('Exchange error:', error.message)
+      logger.error('Error details:', JSON.stringify(error, null, 2))
       return NextResponse.redirect(new URL('/login?error=verification_failed', request.url))
     }
 
@@ -28,12 +29,12 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      console.error('[Auth Callback] User error:', userError)
+      logger.error('User error:', userError)
       return NextResponse.redirect(new URL('/login?error=verification_failed', request.url))
     }
 
-    console.log('[Auth Callback] ✅ User authenticated:', user.id)
-    console.log('[Auth Callback] User metadata:', user.user_metadata)
+    logger.auth('✅ User authenticated:', user.id)
+    logger.auth('User metadata:', user.user_metadata)
 
     // Check if profile exists
     const { data: existingProfile } = await supabase
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     const hasNoInvite = existingProfile && !existingProfile.invited_by
     const canApplyInvite = isNewProfile || (isRecentProfile && hasNoInvite)
 
-    console.log('[Auth Callback] Profile status:', {
+    logger.auth('Profile status:', {
       exists: !!existingProfile,
       createdAt: existingProfile?.created_at,
       isRecent: isRecentProfile,
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!existingProfile) {
-      console.log('[Auth Callback] 🆕 Creating new profile')
+      logger.auth('🆕 Creating new profile')
 
       // Create profile
       const { error: profileError } = await supabase.from('profiles').insert({
@@ -71,19 +72,19 @@ export async function GET(request: NextRequest) {
       })
 
       if (profileError) {
-        console.error('[Auth Callback] ❌ Profile creation error:', profileError)
+        logger.error('❌ Profile creation error:', profileError)
       } else {
-        console.log('[Auth Callback] ✅ Profile created')
+        logger.auth('✅ Profile created')
       }
 
       // Apply invite code if provided
       const inviteCode = user.user_metadata.invite_code
-      console.log('[Auth Callback] Invite code from metadata:', inviteCode)
+      logger.auth('Invite code from metadata:', inviteCode)
 
       if (inviteCode) {
         try {
           const cleanCode = cleanInviteCode(inviteCode)
-          console.log('[Auth Callback] 🎁 Processing invite code:', cleanCode)
+          logger.auth('🎁 Processing invite code:', cleanCode)
 
           // Find inviter
           const { data: inviter, error: inviterError } = await supabase
@@ -93,11 +94,11 @@ export async function GET(request: NextRequest) {
             .single()
 
           if (inviterError) {
-            console.log('[Auth Callback] ❌ Inviter not found:', inviterError.message)
+            logger.auth('❌ Inviter not found:', inviterError.message)
           } else if (inviter.id === user.id) {
-            console.log('[Auth Callback] ❌ Self-invite blocked')
+            logger.auth('❌ Self-invite blocked')
           } else {
-            console.log('[Auth Callback] ✅ Inviter found:', inviter.email)
+            logger.auth('✅ Inviter found:', inviter.email)
 
             // Update invited user (new user gets +3 essays)
             const { error: invitedUpdateError } = await supabase
@@ -109,9 +110,9 @@ export async function GET(request: NextRequest) {
               .eq('id', user.id)
 
             if (invitedUpdateError) {
-              console.error('[Auth Callback] ❌ Failed to update invited user:', invitedUpdateError)
+              logger.error('❌ Failed to update invited user:', invitedUpdateError)
             } else {
-              console.log(`[Auth Callback] ✅ Invited user got +${INVITE_BONUSES.INVITED} essays`)
+              logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
 
               // Update inviter (inviter gets +6 essays) using SECURITY DEFINER function
               const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
@@ -120,10 +121,10 @@ export async function GET(request: NextRequest) {
               })
 
               if (inviterUpdateError) {
-                console.error('[Auth Callback] ❌ Failed to update inviter:', inviterUpdateError)
+                logger.error('❌ Failed to update inviter:', inviterUpdateError)
               } else {
                 const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
-                console.log(`[Auth Callback] ✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})`)
+                logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
 
                 // Record invite
                 const { error: recordError } = await supabase
@@ -135,31 +136,31 @@ export async function GET(request: NextRequest) {
                   })
 
                 if (recordError) {
-                  console.error('[Auth Callback] ❌ Failed to record invite:', recordError)
+                  logger.error('❌ Failed to record invite:', recordError)
                 } else {
-                  console.log('[Auth Callback] 🎉 INVITE BONUS SUCCESS!')
-                  console.log(`[Auth Callback] 📊 ${inviter.email} → ${user.email}`)
+                  logger.auth('🎉 INVITE BONUS SUCCESS!')
+                  logger.auth('📊 ${inviter.email} → ${user.email}')
                 }
               }
             }
           }
         } catch (error) {
-          console.error('[Auth Callback] ❌ Invite processing error:', error)
+          logger.error('❌ Invite processing error:', error)
         }
       } else {
-        console.log('[Auth Callback] ℹ️  No invite code provided')
+        logger.auth('ℹ️  No invite code provided')
       }
     } else if (canApplyInvite) {
       // Profile exists but was created recently and has no invite yet
-      console.log('[Auth Callback] 🆕 Recent profile - can still apply invite code')
+      logger.auth('🆕 Recent profile - can still apply invite code')
 
       const inviteCode = user.user_metadata.invite_code
-      console.log('[Auth Callback] Invite code from metadata:', inviteCode)
+      logger.auth('Invite code from metadata:', inviteCode)
 
       if (inviteCode) {
         try {
           const cleanCode = cleanInviteCode(inviteCode)
-          console.log('[Auth Callback] 🎁 Processing invite code:', cleanCode)
+          logger.auth('🎁 Processing invite code:', cleanCode)
 
           // Find inviter
           const { data: inviter, error: inviterError } = await supabase
@@ -169,11 +170,11 @@ export async function GET(request: NextRequest) {
             .single()
 
           if (inviterError) {
-            console.log('[Auth Callback] ❌ Inviter not found:', inviterError.message)
+            logger.auth('❌ Inviter not found:', inviterError.message)
           } else if (inviter.id === user.id) {
-            console.log('[Auth Callback] ❌ Self-invite blocked')
+            logger.auth('❌ Self-invite blocked')
           } else {
-            console.log('[Auth Callback] ✅ Inviter found:', inviter.email)
+            logger.auth('✅ Inviter found:', inviter.email)
 
             // Update invited user (gets +3 essays)
             const { error: invitedUpdateError } = await supabase
@@ -185,9 +186,9 @@ export async function GET(request: NextRequest) {
               .eq('id', user.id)
 
             if (invitedUpdateError) {
-              console.error('[Auth Callback] ❌ Failed to update invited user:', invitedUpdateError)
+              logger.error('❌ Failed to update invited user:', invitedUpdateError)
             } else {
-              console.log(`[Auth Callback] ✅ Invited user got +${INVITE_BONUSES.INVITED} essays`)
+              logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
 
               // Update inviter (gets +6 essays) using SECURITY DEFINER function
               const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
@@ -196,10 +197,10 @@ export async function GET(request: NextRequest) {
               })
 
               if (inviterUpdateError) {
-                console.error('[Auth Callback] ❌ Failed to update inviter:', inviterUpdateError)
+                logger.error('❌ Failed to update inviter:', inviterUpdateError)
               } else {
                 const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
-                console.log(`[Auth Callback] ✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})`)
+                logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
 
                 // Record invite
                 const { error: recordError } = await supabase
@@ -211,30 +212,30 @@ export async function GET(request: NextRequest) {
                   })
 
                 if (recordError) {
-                  console.error('[Auth Callback] ❌ Failed to record invite:', recordError)
+                  logger.error('❌ Failed to record invite:', recordError)
                 } else {
-                  console.log('[Auth Callback] 🎉 INVITE BONUS SUCCESS!')
-                  console.log(`[Auth Callback] 📊 ${inviter.email} → ${user.email}`)
+                  logger.auth('🎉 INVITE BONUS SUCCESS!')
+                  logger.auth('📊 ${inviter.email} → ${user.email}')
                 }
               }
             }
           }
         } catch (error) {
-          console.error('[Auth Callback] ❌ Invite processing error:', error)
+          logger.error('❌ Invite processing error:', error)
         }
       } else {
-        console.log('[Auth Callback] ℹ️  No invite code in metadata')
+        logger.auth('ℹ️  No invite code in metadata')
       }
     } else {
-      console.log('[Auth Callback] ℹ️  Profile exists - cannot apply invite (too old or already has invite)')
+      logger.auth('ℹ️  Profile exists - cannot apply invite (too old or already has invite)')
     }
 
     // Redirect to dashboard
-    console.log('[Auth Callback] → Redirecting to dashboard')
+    logger.auth('→ Redirecting to dashboard')
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // No code provided
-  console.log('[Auth Callback] ❌ No code provided')
+  logger.auth('❌ No code provided')
   return NextResponse.redirect(new URL('/login?error=verification_failed', request.url))
 }

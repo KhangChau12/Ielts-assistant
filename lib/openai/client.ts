@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { logger } from '@/lib/logger'
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY environment variable')
@@ -15,7 +16,7 @@ if (groqApiKeys.length === 0) {
   throw new Error('Missing GROQ_API_KEY_1 (or any GROQ_API_KEY_N) environment variable')
 }
 
-console.log(`[Groq] Loaded ${groqApiKeys.length} API keys for rotation`)
+logger.info(`[Groq] Loaded ${groqApiKeys.length} API keys for rotation`)
 
 // Track current key index for round-robin rotation
 let currentGroqKeyIndex = 0

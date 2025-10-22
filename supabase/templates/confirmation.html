@@ -3,78 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirm Your Email - IELTS4Life</title>
+  <title>Confirm Your Email - IELTS Assistant</title>
+  <!-- Google Fonts - Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* Responsive styles for email clients */
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      .mobile-padding {
+        padding: 30px 20px !important;
+      }
+      .mobile-text-large {
+        font-size: 36px !important;
+      }
+      .mobile-text-medium {
+        font-size: 24px !important;
+      }
+      .mobile-text-base {
+        font-size: 16px !important;
+      }
+      .mobile-hide {
+        display: none !important;
+      }
+      .mobile-full-width {
+        width: 100% !important;
+      }
+      .mobile-stack {
+        display: block !important;
+        width: 100% !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 0;">
+<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(to bottom right, #f0f9ff 0%, #e0f2fe 100%);">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding: 20px 0;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <!-- Main Container -->
+        <table class="email-container" width="100%" cellpadding="0" cellspacing="0" style="max-width: 680px; width: 100%; background-color: #ffffff; border-radius: 24px; overflow: visible; box-shadow: 0 20px 60px rgba(6, 182, 212, 0.2); margin: 0 auto;">
 
-          <!-- Header with gradient -->
+          <!-- Hero Header - Matching homepage hero section -->
           <tr>
-            <td style="background: linear-gradient(135deg, #0c4a6e 0%, #06b6d4 100%); padding: 40px 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">IELTS4Life</h1>
-              <p style="margin: 10px 0 0 0; color: #e0f2fe; font-size: 14px;">Your AI-Powered IELTS Writing Coach</p>
-            </td>
-          </tr>
+            <td class="mobile-padding" style="position: relative; background: linear-gradient(to bottom right, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%); padding: 60px 40px; text-align: center; overflow: hidden; border-radius: 24px 24px 0 0;">
+              <!-- Decorative gradient orbs - matching homepage -->
+              <div style="position: absolute; top: -160px; right: -160px; width: 384px; height: 384px; background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%); border-radius: 50%; filter: blur(48px);"></div>
+              <div style="position: absolute; bottom: -160px; left: -160px; width: 384px; height: 384px; background: linear-gradient(to bottom right, rgba(14, 165, 233, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%); border-radius: 50%; filter: blur(48px);"></div>
 
-          <!-- Content -->
-          <tr>
-            <td style="padding: 40px 30px;">
-              <h2 style="margin: 0 0 20px 0; color: #0c4a6e; font-size: 24px; font-weight: 600;">Welcome to IELTS4Life!</h2>
+              <!-- Grid pattern overlay - matching homepage -->
+              <div style="position: absolute; inset: 0; background-image: linear-gradient(to right, #e0f2fe 1px, transparent 1px), linear-gradient(to bottom, #e0f2fe 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, #000 70%, transparent 110%); mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, #000 70%, transparent 110%);"></div>
 
-              <p style="margin: 0 0 20px 0; color: #475569; font-size: 16px; line-height: 1.6;">
-                Thank you for signing up! We're excited to help you improve your IELTS Writing skills with AI-powered feedback and personalized vocabulary recommendations.
-              </p>
-
-              <p style="margin: 0 0 30px 0; color: #475569; font-size: 16px; line-height: 1.6;">
-                To get started, please confirm your email address by clicking the button below:
-              </p>
-
-              <!-- Confirmation Button -->
-              <table width="100%" cellpadding="0" cellspacing="0">
+              <!-- Badge with Sparkles icon -->
+              <table cellpadding="0" cellspacing="0" style="margin: 0 auto 16px auto;">
                 <tr>
-                  <td align="center" style="padding: 20px 0;">
-                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #0c4a6e 0%, #06b6d4 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 6px rgba(6, 182, 212, 0.3);">
-                      Confirm Email Address
-                    </a>
+                  <td style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); border: 1px solid rgba(6, 182, 212, 0.1); border-radius: 50px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding-right: 8px; vertical-align: middle;">
+                          <!-- Sparkles SVG Icon -->
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" fill="#06b6d4"/>
+                            <path d="M20 3v4" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M22 5h-4" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M4 17v2" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M5 18H3" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+                          </svg>
+                        </td>
+                        <td style="font-size: 12px; font-weight: 600; color: #0e7490; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: middle; white-space: nowrap;">
+                          AI-Powered IELTS Writing Coach
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin: 30px 0 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
-                If the button doesn't work, you can also copy and paste this link into your browser:
-              </p>
-              <p style="margin: 10px 0 0 0; color: #06b6d4; font-size: 14px; word-break: break-all;">
-                {{ .ConfirmationURL }}
+              <!-- Main Title - Matching homepage -->
+              <h1 class="mobile-text-large" style="position: relative; margin: 0; color: #0f172a; font-size: 48px; font-weight: 900; letter-spacing: -0.025em; line-height: 1.25; font-family: 'Nunito', sans-serif;">
+                Master IELTS Writing
+              </h1>
+
+              <!-- Gradient subtitle text - Matching homepage -->
+              <h2 class="mobile-text-large" style="position: relative; margin: 0 0 16px 0; font-size: 48px; font-weight: 900; letter-spacing: -0.025em; line-height: 1.25; background: linear-gradient(to right, #06b6d4 0%, #3b82f6 50%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-family: 'Nunito', sans-serif;">
+                Score Higher
+              </h2>
+
+              <p class="mobile-text-base" style="position: relative; margin: 0; color: #64748b; font-size: 20px; font-weight: 400; line-height: 1.625; max-width: 512px; margin-left: auto; margin-right: auto; font-family: 'Nunito', sans-serif;">
+                Get instant, expert-level feedback on your essays. Track progress, enhance vocabulary, and achieve your target band score with AI.
               </p>
             </td>
           </tr>
 
-          <!-- What's Next Section -->
+          <!-- Welcome Content -->
           <tr>
-            <td style="padding: 0 30px 40px 30px;">
-              <div style="background-color: #f1f5f9; border-radius: 6px; padding: 20px; margin-top: 20px;">
-                <h3 style="margin: 0 0 15px 0; color: #0c4a6e; font-size: 18px; font-weight: 600;">What's Next?</h3>
-                <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
-                  <li>Write and submit your IELTS Task 2 essays</li>
-                  <li>Get instant AI scoring on all 4 criteria</li>
-                  <li>Receive personalized vocabulary recommendations</li>
-                  <li>Track your progress over time</li>
-                </ul>
+            <td class="mobile-padding" style="padding: 50px 40px 40px 40px;">
+              <h2 class="mobile-text-medium" style="margin: 0 0 24px 0; font-size: 32px; font-weight: 900; background: linear-gradient(to right, #06b6d4 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.3;">
+                Welcome to IELTS Assistant!
+              </h2>
+
+              <p style="margin: 0 0 20px 0; color: #475569; font-size: 17px; line-height: 1.7; font-weight: 400;">
+                Thank you for signing up! We're excited to help you improve your IELTS Writing skills with AI-powered feedback and personalized vocabulary recommendations.
+              </p>
+
+              <p style="margin: 0 0 36px 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                To get started, please confirm your email address by clicking the button below:
+              </p>
+
+              <!-- Confirmation Button - Matching homepage CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding: 0 0 36px 0;">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background: linear-gradient(to right, #06b6d4 0%, #3b82f6 50%, #06b6d4 100%); background-size: 200% 100%; background-position: 0% 50%; border-radius: 16px; box-shadow: 0 12px 32px rgba(6, 182, 212, 0.35);">
+                          <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 18px 48px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; letter-spacing: 0.3px;">
+                            <table cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td style="padding-right: 8px; vertical-align: middle;">
+                                  <!-- Sparkles icon for button -->
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" fill="white"/>
+                                  </svg>
+                                </td>
+                                <td style="color: #ffffff; vertical-align: middle; white-space: nowrap;">
+                                  Confirm Email Address
+                                </td>
+                                <td style="padding-left: 8px; vertical-align: middle; color: #ffffff;">
+                                  →
+                                </td>
+                              </tr>
+                            </table>
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Alternative link -->
+              <div style="padding: 24px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; border-left: 4px solid #06b6d4;">
+                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                  If the button doesn't work
+                </p>
+                <p style="margin: 0; color: #0284c7; font-size: 13px; word-break: break-all; line-height: 1.6;">
+                  {{ .ConfirmationURL }}
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Features Section - Matching homepage cards -->
+          <tr>
+            <td class="mobile-padding" style="padding: 0 40px 50px 40px;">
+              <div class="mobile-padding" style="background: linear-gradient(to bottom right, #ffffff 0%, #f0f9ff 100%); border-radius: 16px; padding: 36px; border: 1px solid #e0f2fe; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+                <h3 class="mobile-text-medium" style="margin: 0 0 32px 0; color: #0c4a6e; font-size: 24px; font-weight: 900; text-align: center;">
+                  What's Next?
+                </h3>
+
+                <!-- Feature items with SVG icons -->
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <!-- Feature 1: AI Essay Scoring -->
+                  <tr>
+                    <td style="padding: 0 0 24px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="56" valign="top" style="padding-right: 16px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(to bottom right, #06b6d4 0%, #0ea5e9 100%); border-radius: 14px; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3); display: flex; align-items: center; justify-content: center;">
+                              <!-- FileText icon -->
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                              </svg>
+                            </div>
+                          </td>
+                          <td valign="top">
+                            <p style="margin: 0 0 6px 0; color: #0c4a6e; font-size: 18px; font-weight: 800; line-height: 1.4;">AI Essay Scoring</p>
+                            <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 1.6;">Get detailed band scores for all 4 IELTS criteria with authentic examiner-level assessment</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Feature 2: Detailed Feedback -->
+                  <tr>
+                    <td style="padding: 0 0 24px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="56" valign="top" style="padding-right: 16px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(to bottom right, #3b82f6 0%, #06b6d4 100%); border-radius: 14px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center;">
+                              <!-- Target icon -->
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="6"/>
+                                <circle cx="12" cy="12" r="2"/>
+                              </svg>
+                            </div>
+                          </td>
+                          <td valign="top">
+                            <p style="margin: 0 0 6px 0; color: #0c4a6e; font-size: 18px; font-weight: 800; line-height: 1.4;">Detailed Feedback</p>
+                            <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 1.6;">Receive specific error identification and actionable comments for improvement</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Feature 3: Vocabulary Builder -->
+                  <tr>
+                    <td style="padding: 0 0 24px 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="56" valign="top" style="padding-right: 16px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(to bottom right, #0ea5e9 0%, #14b8a6 100%); border-radius: 14px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center;">
+                              <!-- BookOpen icon -->
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                              </svg>
+                            </div>
+                          </td>
+                          <td valign="top">
+                            <p style="margin: 0 0 6px 0; color: #0c4a6e; font-size: 18px; font-weight: 800; line-height: 1.4;">Vocabulary Builder</p>
+                            <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 1.6;">Generate C1-C2 paraphrases and topic-specific vocabulary suggestions</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Feature 4: Progress Tracking -->
+                  <tr>
+                    <td style="padding: 0;">
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="56" valign="top" style="padding-right: 16px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(to bottom right, #0ea5e9 0%, #8b5cf6 100%); border-radius: 14px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center;">
+                              <!-- TrendingUp icon -->
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
+                              </svg>
+                            </div>
+                          </td>
+                          <td valign="top">
+                            <p style="margin: 0 0 6px 0; color: #0c4a6e; font-size: 18px; font-weight: 800; line-height: 1.4;">Progress Tracking</p>
+                            <p style="margin: 0; color: #64748b; font-size: 15px; line-height: 1.6;">Visualize improvement with charts and AI-powered insights on writing patterns</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Trust badges - Matching homepage -->
+                <div style="margin-top: 32px; padding-top: 28px; border-top: 1px solid #e0f2fe; text-align: center;">
+                  <table cellpadding="0" cellspacing="0" style="margin: 0 auto; display: inline-block;">
+                    <tr>
+                      <td class="mobile-stack" style="padding: 8px 12px;">
+                        <table cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="padding-right: 8px; vertical-align: middle;">
+                              <!-- CheckCircle icon -->
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                              </svg>
+                            </td>
+                            <td style="font-size: 14px; font-weight: 600; color: #475569; white-space: nowrap; vertical-align: middle;">
+                              Free to start
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td class="mobile-stack" style="padding: 8px 12px;">
+                        <table cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="padding-right: 8px; vertical-align: middle;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                              </svg>
+                            </td>
+                            <td style="font-size: 14px; font-weight: 600; color: #475569; white-space: nowrap; vertical-align: middle;">
+                              No credit card
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td class="mobile-stack" style="padding: 8px 12px;">
+                        <table cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="padding-right: 8px; vertical-align: middle;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                              </svg>
+                            </td>
+                            <td style="font-size: 14px; font-weight: 600; color: #475569; white-space: nowrap; vertical-align: middle;">
+                              6 free essays
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
               </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0 0 10px 0; color: #64748b; font-size: 14px;">
-                This email was sent to you because you registered for IELTS4Life.
+            <td class="mobile-padding" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                This email was sent to you because you registered for IELTS Assistant.
               </p>
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                © 2025 IELTS4Life. All rights reserved.
+              <p style="margin: 0; color: #94a3b8; font-size: 12px; font-weight: 500;">
+                © 2025 IELTS Assistant. All rights reserved.
               </p>
             </td>
           </tr>
