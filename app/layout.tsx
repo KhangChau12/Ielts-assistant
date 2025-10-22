@@ -122,8 +122,24 @@ export default async function RootLayout({
     }
   }
 
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'IELTS4Life',
+    alternateName: 'IELTS for Life',
+    url: 'https://ielts4life.com',
+    logo: 'https://ielts4life.com/android-chrome-512x512.png',
+    description: 'Free AI-powered IELTS writing scorer and feedback tool. Get instant band scores, detailed feedback, and vocabulary enhancement for IELTS Writing Task 2.',
+  }
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body className={`${nunito.className} ${shrikhand.variable}`}>
         <div className="flex min-h-screen flex-col">
           <Header user={user} />
