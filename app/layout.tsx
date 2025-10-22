@@ -44,6 +44,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'IELTS4Life' }],
   creator: 'IELTS4Life',
   publisher: 'IELTS4Life',
+  verification: {
+    google: 'L-ZUYNiUDbIIyTtG8ec9Hput6hemUZIqiYqxebVIeYA',
+  },
   robots: {
     index: true,
     follow: true,
