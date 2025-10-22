@@ -16,8 +16,67 @@ const shrikhand = Shrikhand({
 })
 
 export const metadata: Metadata = {
-  title: 'IELTS4Life - AI-Powered Writing Coach',
-  description: 'Improve your IELTS Writing Task 2 with AI-powered scoring, feedback, and vocabulary enhancement tools.',
+  metadataBase: new URL('https://ielts4life.com'),
+  title: 'IELTS for Life - AI IELTS Writing Scorer | IELTS 4 Life Writing Assistant',
+  description: 'Free AI-powered IELTS writing scorer and feedback tool. Get instant band scores, detailed feedback, and vocabulary enhancement for IELTS Writing Task 2. Master IELTS writing with AI scoring, essay correction, and personalized tips. Perfect for IELTS preparation, band 7+ writing, and exam practice.',
+  keywords: [
+    'IELTS for life',
+    'IELTS 4 life',
+    'ielts for life',
+    'ielts 4 life',
+    'IELTS writing',
+    'AI IELTS scoring',
+    'IELTS writing scorer',
+    'IELTS essay checker',
+    'IELTS writing feedback',
+    'IELTS writing assistant',
+    'IELTS Task 2',
+    'IELTS band score',
+    'IELTS writing practice',
+    'AI essay scoring',
+    'IELTS writing tips',
+    'IELTS preparation',
+    'IELTS vocabulary',
+    'free IELTS checker',
+    'online IELTS scorer',
+    'IELTS writing help',
+  ],
+  authors: [{ name: 'IELTS4Life' }],
+  creator: 'IELTS4Life',
+  publisher: 'IELTS4Life',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://ielts4life.com',
+    siteName: 'IELTS for Life',
+    title: 'IELTS for Life - AI IELTS Writing Scorer & Assistant',
+    description: 'Free AI-powered IELTS writing scorer. Get instant band scores, detailed feedback, and vocabulary enhancement for IELTS Writing Task 2.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'IELTS for Life - AI Writing Coach',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IELTS for Life - AI IELTS Writing Scorer',
+    description: 'Free AI-powered IELTS writing scorer with instant feedback and band scores',
+    images: ['/twitter-image.png'],
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -29,6 +88,9 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/site.webmanifest',
+  alternates: {
+    canonical: 'https://ielts4life.com',
+  },
 }
 
 export default async function RootLayout({

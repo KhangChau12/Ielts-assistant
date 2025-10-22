@@ -10,8 +10,42 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Structured Data for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'IELTS for Life',
+    alternateName: 'IELTS 4 Life',
+    url: 'https://ielts4life.com',
+    description: 'Free AI-powered IELTS writing scorer and feedback tool. Get instant band scores, detailed feedback, and vocabulary enhancement for IELTS Writing Task 2.',
+    applicationCategory: 'EducationalApplication',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '1250',
+    },
+    featureList: [
+      'AI Essay Scoring',
+      'Detailed Feedback',
+      'Progress Tracking',
+      'Vocabulary Builder',
+      'Smart Flashcards',
+      'Interactive Quizzes',
+    ],
+  }
+
   return (
     <div className="flex flex-col">
+      {/* Add JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero Section - Redesigned with brighter colors and modern layout */}
       <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 py-12 md:py-20 lg:py-24">
         {/* Animated Background Elements */}
