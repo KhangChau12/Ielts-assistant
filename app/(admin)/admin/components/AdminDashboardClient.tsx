@@ -38,8 +38,8 @@ interface AdminStats {
     role: string
   }>
   essaysOverTime: Array<{
-    overall_score: number | null
-    created_at: string
+    date: string
+    count: number
   }>
   // Vocabulary stats
   totalVocabulary: number
@@ -93,19 +93,17 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     }
   }
 
-  // Prepare token usage over time data
-  const tokenUsageData = stats.essaysOverTime
-    .reduce((acc: any[], essay) => {
-      const date = format(new Date(essay.created_at), 'MMM dd')
-      const existing = acc.find((item) => item.date === date)
-      if (existing) {
-        existing.count += 1
-      } else {
-        acc.push({ date, count: 1 })
-      }
-      return acc
-    }, [])
+  // Prepare daily essay activity data (NEW essays per day, not cumulative)
+  const dailyEssayActivityData = stats.essaysOverTime
     .slice(-10)
+    .map((item, index, arr) => {
+      // Calculate new essays for this day (difference from previous day)
+      const newEssays = index === 0 ? item.count : item.count - arr[index - 1].count
+      return {
+        date: format(new Date(item.date), 'MMM dd'),
+        count: newEssays
+      }
+    })
 
   // Prepare score distribution data (Band 8-9 merged)
   const scoreDistributionData = [5, 6, 7, 8].map((score) => ({
@@ -113,30 +111,11 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     count: stats.scoreDistribution[score] || 0,
   }))
 
-  // Prepare essays over time data (CUMULATIVE - always increasing!)
-  const essaysOverTimeData = (() => {
-    // Group essays by date and count
-    const dailyCounts: { [key: string]: number } = {}
-
-    stats.essaysOverTime.forEach(essay => {
-      const date = format(new Date(essay.created_at), 'MMM dd')
-      dailyCounts[date] = (dailyCounts[date] || 0) + 1
-    })
-
-    // Get last 14 days
-    const allDates = Object.keys(dailyCounts).sort()
-    const last14Dates = allDates.slice(-14)
-
-    // Calculate cumulative total for each date
-    let cumulativeTotal = 0
-    return last14Dates.map(date => {
-      cumulativeTotal += dailyCounts[date]
-      return {
-        date,
-        essays: cumulativeTotal
-      }
-    })
-  })()
+  // Prepare essays over time data (CUMULATIVE - already calculated in backend)
+  const essaysOverTimeData = stats.essaysOverTime.map(item => ({
+    date: format(new Date(item.date), 'MMM dd'),
+    essays: item.count
+  }))
 
   // Prepare quiz performance data
   const quizPerformanceData = stats.quizAttemptsOverTime
@@ -435,16 +414,16 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Token Usage Over Time */}
+        {/* Daily Essay Activity */}
         <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
           <CardHeader>
-            <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Token Usage Over Time</CardTitle>
-            <CardDescription>Daily activity based on essay submissions</CardDescription>
+            <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Daily Essay Activity</CardTitle>
+            <CardDescription>Essay submissions over the last 10 days</CardDescription>
           </CardHeader>
           <CardContent>
-            {tokenUsageData.length > 0 ? (
+            {dailyEssayActivityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={tokenUsageData}>
+                <BarChart data={dailyEssayActivityData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
                   <XAxis
                     dataKey="date"

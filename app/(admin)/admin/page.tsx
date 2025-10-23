@@ -19,8 +19,8 @@ interface AdminStats {
     role: string
   }>
   essaysOverTime: Array<{
-    overall_score: number | null
-    created_at: string
+    date: string
+    count: number
   }>
   // Vocabulary stats
   totalVocabulary: number

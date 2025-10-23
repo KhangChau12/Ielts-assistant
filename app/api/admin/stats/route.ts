@@ -25,21 +25,35 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Calculate date range for 14 days ago
+    const fourteenDaysAgo = new Date()
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+    fourteenDaysAgo.setHours(0, 0, 0, 0)
+    const fourteenDaysAgoISO = fourteenDaysAgo.toISOString()
+
     // Fetch statistics
     const [
       { count: totalUsers },
       { count: totalEssays },
       { data: tokenUsage },
-      { data: essays },
-      { data: users },
+      { data: allEssaysForScoring },
+      { data: essaysLast14Days },
+      { data: recentUsers },
+      { data: allUsers },
       { count: totalVocabulary },
       { data: quizAttempts },
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('essays').select('*', { count: 'exact', head: true }),
       supabase.from('token_usage').select('*'),
-      supabase.from('essays').select('overall_score, created_at').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, email, created_at, role').order('created_at', { ascending: false }),
+      // Get all essays for score distribution and average
+      supabase.from('essays').select('overall_score').order('created_at', { ascending: false }),
+      // Get essays from last 14 days for chart
+      supabase.from('essays').select('created_at').gte('created_at', fourteenDaysAgoISO).order('created_at', { ascending: true }),
+      // Get recent 10 users for table
+      supabase.from('profiles').select('id, email, created_at, role').order('created_at', { ascending: false }).limit(10),
+      // Get all users for growth chart and counts
+      supabase.from('profiles').select('id, email, created_at').order('created_at', { ascending: true }),
       supabase.from('vocabulary').select('*', { count: 'exact', head: true }),
       supabase.from('vocabulary_quiz_attempts').select('score, total_questions, vocab_type, created_at'),
     ])
@@ -50,7 +64,7 @@ export async function GET() {
 
     // Calculate score distribution (merge Band 8 & 9)
     const scoreDistribution: { [key: string]: number } = {}
-    essays?.forEach((essay) => {
+    allEssaysForScoring?.forEach((essay) => {
       if (essay.overall_score) {
         const score = Math.floor(essay.overall_score)
         // Merge Band 8 and 9 together
@@ -60,7 +74,7 @@ export async function GET() {
     })
 
     // Calculate average scores
-    const validScores = essays?.filter((e) => e.overall_score !== null) || []
+    const validScores = allEssaysForScoring?.filter((e) => e.overall_score !== null) || []
     const avgOverallScore =
       validScores.length > 0
         ? validScores.reduce((sum, e) => sum + (e.overall_score || 0), 0) / validScores.length
@@ -93,40 +107,47 @@ export async function GET() {
     })) || []
 
     // Calculate user tier statistics
-    const ptnkUsers = users?.filter(u => u.email?.endsWith('@ptnk.edu.vn')).length || 0
+    const ptnkUsers = allUsers?.filter(u => u.email?.endsWith('@ptnk.edu.vn')).length || 0
     // Pro users who are NOT PTNK (future paid subscribers)
     const paidProUsers = 0 // Currently we don't have paid subscriptions yet
 
-    // User growth over last 14 days
-    const fourteenDaysAgo = new Date()
-    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
-
-    const userGrowthData: { [key: string]: number } = {}
+    // User growth over last 14 days (CUMULATIVE - total users up to each day)
     const today = new Date()
+    const userGrowthData: Array<{ date: string; count: number }> = []
 
-    // Initialize all 14 days with 0
+    // Generate 14 days range
     for (let i = 13; i >= 0; i--) {
       const date = new Date(today)
       date.setDate(date.getDate() - i)
+      date.setHours(23, 59, 59, 999) // End of day
       const dateKey = date.toISOString().split('T')[0]
-      userGrowthData[dateKey] = 0
+
+      // Count all users created up to this date (cumulative)
+      const count = allUsers?.filter(user => {
+        const userDate = new Date(user.created_at)
+        return userDate <= date
+      }).length || 0
+
+      userGrowthData.push({ date: dateKey, count })
     }
 
-    // Count cumulative users up to each day
-    users?.forEach(user => {
-      const userDate = new Date(user.created_at).toISOString().split('T')[0]
-      // Increment count for this day and all days after
-      Object.keys(userGrowthData).forEach(dateKey => {
-        if (userDate <= dateKey) {
-          userGrowthData[dateKey]++
-        }
-      })
-    })
+    // Essays over time - last 14 days (CUMULATIVE)
+    const essaysGrowthData: Array<{ date: string; count: number }> = []
 
-    const usersOverTime = Object.entries(userGrowthData).map(([date, count]) => ({
-      date,
-      count
-    }))
+    for (let i = 13; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      date.setHours(23, 59, 59, 999)
+      const dateKey = date.toISOString().split('T')[0]
+
+      // Count all essays created up to this date (cumulative)
+      const count = essaysLast14Days?.filter(essay => {
+        const essayDate = new Date(essay.created_at)
+        return essayDate <= date
+      }).length || 0
+
+      essaysGrowthData.push({ date: dateKey, count })
+    }
 
     return NextResponse.json({
       totalUsers: totalUsers || 0,
@@ -137,8 +158,8 @@ export async function GET() {
       totalOutputTokens,
       scoreDistribution,
       avgOverallScore: Math.round(avgOverallScore * 10) / 10,
-      recentUsers: users?.slice(0, 10) || [],
-      essaysOverTime: essays || [],
+      recentUsers: recentUsers || [],
+      essaysOverTime: essaysGrowthData,
       // Vocabulary stats
       totalVocabulary: totalVocabulary || 0,
       totalQuizAttempts: quizAttempts?.length || 0,
@@ -148,7 +169,7 @@ export async function GET() {
       avgParaphraseScore: Math.round(avgParaphraseScore * 10) / 10,
       avgTopicScore: Math.round(avgTopicScore * 10) / 10,
       quizAttemptsOverTime,
-      usersOverTime,
+      usersOverTime: userGrowthData,
     })
   } catch (error) {
     console.error('Error fetching admin stats:', error)
