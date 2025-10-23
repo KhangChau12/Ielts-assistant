@@ -70,19 +70,25 @@ export default function WritePage() {
 
   // Simulate progress - 4 seconds total (Groq is fast!)
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isSubmitting && progress < 95) {
-      interval = setInterval(() => {
-        setProgress(prev => {
-          // 4 seconds = 4000ms, update every 100ms = 40 updates
-          // Each update = ~2.375% to reach 95% in 4s
-          if (prev < 95) return prev + 2.375
-          return prev
-        })
-      }, 100)
+    if (!isSubmitting) {
+      return
     }
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        // Stop at 95%
+        if (prev >= 95) {
+          clearInterval(interval)
+          return 95
+        }
+        // 4 seconds = 4000ms, update every 100ms = 40 updates
+        // Each update = ~2.375% to reach 95% in 4s
+        return prev + 2.375
+      })
+    }, 100)
+
     return () => clearInterval(interval)
-  }, [isSubmitting, progress])
+  }, [isSubmitting]) // Only depend on isSubmitting, not progress
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

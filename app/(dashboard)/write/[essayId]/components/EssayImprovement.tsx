@@ -107,29 +107,37 @@ export function EssayImprovement({
 
   // Progress simulation - 3 seconds for improvement (Groq is fast!)
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isGenerating && progress < 95) {
-      interval = setInterval(() => {
-        setProgress(prev => {
-          const newProgress = prev + 3.17 // 95% in 3 seconds (3000ms / 100ms intervals)
-
-          // Update stage based on progress
-          if (newProgress >= 75) {
-            setStage('Polishing improvements...')
-          } else if (newProgress >= 50) {
-            setStage('Enhancing vocabulary and grammar...')
-          } else if (newProgress >= 25) {
-            setStage('Improving coherence and structure...')
-          } else {
-            setStage('Analyzing your essay...')
-          }
-
-          return Math.min(newProgress, 95)
-        })
-      }, 100)
+    if (!isGenerating) {
+      return // Don't create interval if not generating
     }
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        // Stop at 95%
+        if (prev >= 95) {
+          clearInterval(interval)
+          return 95
+        }
+
+        const newProgress = prev + 3.17 // 95% in 3 seconds (3000ms / 100ms intervals)
+
+        // Update stage based on progress
+        if (newProgress >= 75) {
+          setStage('Polishing improvements...')
+        } else if (newProgress >= 50) {
+          setStage('Enhancing vocabulary and grammar...')
+        } else if (newProgress >= 25) {
+          setStage('Improving coherence and structure...')
+        } else {
+          setStage('Analyzing your essay...')
+        }
+
+        return Math.min(newProgress, 95)
+      })
+    }, 100)
+
     return () => clearInterval(interval)
-  }, [isGenerating, progress])
+  }, [isGenerating]) // Only depend on isGenerating, not progress
 
   const generateImprovement = async () => {
     setIsGenerating(true)

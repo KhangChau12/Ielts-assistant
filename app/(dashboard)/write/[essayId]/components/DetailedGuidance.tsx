@@ -97,13 +97,25 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
       return // Don't poll if we already know improved essay exists or guidance is done/in progress
     }
 
+    let pollCount = 0
+    const MAX_POLLS = 30 // Max 60 seconds (30 * 2s)
+
     const checkImprovedEssay = async () => {
       try {
+        pollCount++
+
+        // Stop polling after max attempts
+        if (pollCount > MAX_POLLS) {
+          clearInterval(interval)
+          return
+        }
+
         const response = await fetch(`/api/essays/${essayId}/status`)
         const data = await response.json()
 
         if (data.has_improved_essay) {
           setImprovedEssayExists(true)
+          clearInterval(interval) // Stop polling once found
         }
       } catch (err) {
         console.error('Failed to check improved essay status:', err)
@@ -117,7 +129,7 @@ export function DetailedGuidance({ essayId, hasImprovedEssay, initialGuidance }:
     checkImprovedEssay()
 
     return () => clearInterval(interval)
-  }, [essayId, improvedEssayExists, hasStarted, guidance])
+  }, [essayId]) // Only depend on essayId - early return handles the rest
 
   // Auto-generate when improved essay is ready (and guidance doesn't exist yet)
   useEffect(() => {
