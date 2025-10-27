@@ -38,10 +38,15 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient()
 
+      // Use NEXT_PUBLIC_SITE_URL if available (production), otherwise use window.location.origin (local dev)
+      // This ensures production URL is used even when testing from localhost
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         data.email,
         {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          // IMPORTANT: Add type=recovery so callback knows this is password reset flow
+          redirectTo: `${baseUrl}/auth/callback?type=recovery`,
         }
       )
 

@@ -8,8 +8,12 @@ import { logger } from '@/lib/logger'
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const type = requestUrl.searchParams.get('type')
 
-  logger.auth('Received request with code:', code?.substring(0, 10) + '...')
+  logger.auth('Received callback request')
+  logger.auth('- code:', code?.substring(0, 10) + '...')
+  logger.auth('- type:', type)
+  logger.auth('- full URL:', requestUrl.toString())
 
   // Exchange code for session (middleware handles PKCE automatically)
   if (code) {
@@ -17,7 +21,7 @@ export async function GET(request: NextRequest) {
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     // This will handle PKCE verification automatically via cookies
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
       logger.error('Exchange error:', error.message)
@@ -35,6 +39,16 @@ export async function GET(request: NextRequest) {
 
     logger.auth('✅ User authenticated:', user.id)
     logger.auth('User metadata:', user.user_metadata)
+
+    // Check if this is a password recovery flow by checking the URL type parameter
+    // Note: Supabase passes 'type=recovery' when redirecting from password reset email
+    const type = requestUrl.searchParams.get('type')
+
+    // If this is recovery, redirect to reset password page immediately
+    if (type === 'recovery') {
+      logger.auth('→ Password recovery detected - redirecting to reset-password')
+      return NextResponse.redirect(new URL('/reset-password', request.url))
+    }
 
     // Check if profile exists
     const { data: existingProfile } = await supabase
@@ -230,18 +244,9 @@ export async function GET(request: NextRequest) {
       logger.auth('ℹ️  Profile exists - cannot apply invite (too old or already has invite)')
     }
 
-    // Check if this is a password recovery flow
-    const type = requestUrl.searchParams.get('type')
-
-    if (type === 'recovery') {
-      // Password reset - redirect to reset password page
-      logger.auth('→ Password recovery detected - redirecting to reset-password')
-      return NextResponse.redirect(new URL('/reset-password', request.url))
-    } else {
-      // Normal signup/login - redirect to dashboard
-      logger.auth('→ Redirecting to dashboard')
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
+    // Normal signup/login - redirect to dashboard
+    logger.auth('→ Redirecting to dashboard')
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // No code provided
