@@ -119,7 +119,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section with Video */}
       <section className="bg-white py-12 md:py-24">
         <div className="container mx-auto px-4">
           <div className="mb-8 md:mb-16 text-center space-y-3 md:space-y-4">
@@ -135,84 +135,165 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <FileText className="h-7 w-7 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">AI Essay Scoring</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Get detailed band scores for all 4 IELTS criteria with authentic examiner-level assessment
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          {/* Split Layout: Features + Video */}
+          <div className="grid gap-6 lg:gap-8 lg:grid-cols-2 items-start">
+            {/* Left: Feature Cards */}
+            <div className="grid gap-4 sm:gap-6">
+              {/* Feature 1 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <FileText className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">AI Essay Scoring</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Get detailed band scores for all 4 IELTS criteria with authentic examiner-level assessment
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
 
-            {/* Feature 2 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-blue-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <Target className="h-7 w-7 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Detailed Feedback</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Receive specific error identification and actionable comments for improvement
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              {/* Feature 2 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-blue-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <Target className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">Detailed Feedback</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Receive specific error identification and actionable comments for improvement
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
 
-            {/* Feature 3 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-sky-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg shadow-sky-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <TrendingUp className="h-7 w-7 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Progress Tracking</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Visualize improvement with charts and AI-powered insights on writing patterns
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              {/* Feature 3 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-sky-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg shadow-sky-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <TrendingUp className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">Progress Tracking</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Visualize improvement with charts and AI-powered insights on writing patterns
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
 
-            {/* Feature 4 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <BookOpen className="h-7 w-7 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Vocabulary Builder</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Generate C1-C2 paraphrases and topic-specific vocabulary suggestions
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              {/* Feature 4 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 shadow-lg shadow-cyan-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">Vocabulary Builder</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Generate C1-C2 paraphrases and topic-specific vocabulary suggestions
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
 
-            {/* Feature 5 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-blue-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-500 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="h-7 w-7 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Smart Flashcards</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Learn with spaced repetition flashcards for maximum vocabulary retention
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              {/* Feature 5 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-blue-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <Sparkles className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">Smart Flashcards</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Learn with spaced repetition flashcards for maximum vocabulary retention
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
 
-            {/* Feature 6 */}
-            <Card className="group border-0 bg-gradient-to-br from-white to-emerald-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <CardHeader className="space-y-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform duration-300">
-                  <CheckCircle className="h-7 w-7 text-white" />
+              {/* Feature 6 */}
+              <Card className="group border-0 bg-gradient-to-br from-white to-emerald-50/30 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="space-y-3 p-4 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform duration-300">
+                      <CheckCircle className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 mb-2">Interactive Quizzes</CardTitle>
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed">
+                        Test vocabulary knowledge with multiple-choice and fill-in exercises
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            </div>
+
+            {/* Right: Video Demo */}
+            <div className="lg:sticky lg:top-8">
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-4 md:p-6 border-2 border-cyan-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">See It In Action</h3>
+                  </div>
+
+                  {/* Video Embed */}
+                  <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl bg-slate-900">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/kqPYIquPSsU"
+                      title="IELTS4Life Tutorial - How to Use AI Essay Scoring"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute inset-0"
+                    />
+                  </div>
+
+                  <p className="text-sm text-slate-600 mt-4 text-center">
+                    Watch how to submit your essay and get instant feedback in 2 minutes
+                  </p>
                 </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Interactive Quizzes</CardTitle>
-                <CardDescription className="text-base text-slate-600 leading-relaxed">
-                  Test vocabulary knowledge with multiple-choice and fill-in exercises
-                </CardDescription>
-              </CardHeader>
-            </Card>
+
+                {/* CTA under video */}
+                <Card className="border-2 border-cyan-200 bg-gradient-to-br from-white to-cyan-50/30 shadow-lg">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-sm font-semibold text-slate-700 mb-4">
+                      Ready to improve your IELTS writing?
+                    </p>
+                    <Link href="/write">
+                      <Button
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                      >
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Try It Free Now
+                      </Button>
+                    </Link>
+                    <p className="text-xs text-slate-500 mt-3">
+                      No sign-up required • Instant results
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
       </section>
