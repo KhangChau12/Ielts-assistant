@@ -230,9 +230,18 @@ export async function GET(request: NextRequest) {
       logger.auth('ℹ️  Profile exists - cannot apply invite (too old or already has invite)')
     }
 
-    // Redirect to dashboard
-    logger.auth('→ Redirecting to dashboard')
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Check if this is a password recovery flow
+    const type = requestUrl.searchParams.get('type')
+
+    if (type === 'recovery') {
+      // Password reset - redirect to reset password page
+      logger.auth('→ Password recovery detected - redirecting to reset-password')
+      return NextResponse.redirect(new URL('/reset-password', request.url))
+    } else {
+      // Normal signup/login - redirect to dashboard
+      logger.auth('→ Redirecting to dashboard')
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   // No code provided
