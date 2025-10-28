@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Reset Your Password - IELTS Assistant</title>
+  <style>
+    /* Responsive styles for email clients */
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      .mobile-padding {
+        padding: 20px !important;
+      }
+      .mobile-text-large {
+        font-size: 32px !important;
+      }
+      .mobile-text-medium {
+        font-size: 22px !important;
+      }
+      .mobile-text-base {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f0f9ff;">
+  <!-- Wrapper Table -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f0f9ff; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <!-- Main Container -->
+        <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 16px;">
+
+          <!-- Hero Header -->
+          <tr>
+            <td style="background-color: #e0f2fe; padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
+              <!-- Badge -->
+              <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="background-color: rgba(255, 255, 255, 0.9); border: 1px solid #bae6fd; border-radius: 25px; padding: 8px 16px;">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding-right: 8px; vertical-align: middle; line-height: 1;">
+                          <span style="color: #06b6d4; font-size: 14px;">🔒</span>
+                        </td>
+                        <td style="font-size: 11px; font-weight: 600; color: #0e7490; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: middle; white-space: nowrap; line-height: 1;">
+                          PASSWORD RESET REQUEST
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Main Title -->
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 0 0 16px 0;">
+                    <h1 class="mobile-text-large" style="margin: 0; color: #0f172a; font-size: 42px; font-weight: 900; line-height: 1.2;">
+                      Reset Your Password
+                    </h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p class="mobile-text-base" style="margin: 0; color: #64748b; font-size: 17px; line-height: 1.6; max-width: 480px; margin: 0 auto;">
+                      We received a request to reset your password. Click the button below to create a new password.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 class="mobile-text-medium" style="margin: 0 0 20px 0; font-size: 28px; font-weight: 800; color: #06b6d4; line-height: 1.3;">
+                Let's Get You Back In
+              </h2>
+
+              <p style="margin: 0 0 16px 0; color: #475569; font-size: 16px; line-height: 1.7;">
+                No worries! It happens to the best of us. Click the button below to reset your password and get back to improving your IELTS writing skills.
+              </p>
+
+              <p style="margin: 0 0 30px 0; color: #64748b; font-size: 15px; line-height: 1.6;">
+                This password reset link will expire in 1 hour for security reasons.
+              </p>
+
+              <!-- Reset Password Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 0 0 30px 0;">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="background-color: #06b6d4; border-radius: 12px; text-align: center;">
+                          <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; letter-spacing: 0.3px;">
+                            🔑 Reset Password →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Alternative link -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding: 20px; background-color: #f8fafc; border-radius: 8px; border-left: 4px solid #06b6d4;">
+                    <p style="margin: 0 0 8px 0; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      If the button doesn't work
+                    </p>
+                    <p style="margin: 0; color: #0284c7; font-size: 12px; word-break: break-all; line-height: 1.5;">
+                      {{ .ConfirmationURL }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Security Notice -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 30px;">
+                <tr>
+                  <td style="padding: 20px; background-color: #fff7ed; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td valign="top" style="padding-right: 12px;">
+                          <span style="color: #f59e0b; font-size: 18px; line-height: 1;">⚠️</span>
+                        </td>
+                        <td>
+                          <p style="margin: 0 0 8px 0; color: #92400e; font-size: 14px; font-weight: 700; line-height: 1.4;">
+                            Didn't request this?
+                          </p>
+                          <p style="margin: 0; color: #b45309; font-size: 13px; line-height: 1.5;">
+                            If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px;">
+              <p style="margin: 0 0 8px 0; color: #64748b; font-size: 13px; line-height: 1.5;">
+                This email was sent to you because a password reset was requested for your IELTS Assistant account.
+              </p>
+              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                &copy; 2025 IELTS Assistant. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

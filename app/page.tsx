@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, TrendingUp, BookOpen, Target, Sparkles, CheckCircle, Zap } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase/server'
+import { FAQSection } from '@/components/home/FAQSection'
 
 export default async function HomePage() {
   const supabase = createServerClient()
@@ -39,12 +40,96 @@ export default async function HomePage() {
     ],
   }
 
+  // FAQ Schema for SEO
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is IELTS4Life and how does it work?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'IELTS4Life is an AI-powered IELTS Writing assistant that helps you improve your writing skills. Simply submit your essay, and our AI examiner analyzes it using official IELTS band descriptors to provide detailed feedback on all 4 assessment criteria: Task Achievement, Coherence and Cohesion, Lexical Resource, and Grammatical Range and Accuracy.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is IELTS4Life really free to use?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! You can start using IELTS4Life completely free without any credit card. New users get 6 free essay submissions to try out all features. No hidden fees, no automatic charges.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How accurate is the AI-powered IELTS scoring?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Our AI is trained on official IELTS band descriptors and thousands of scored essays. It provides band scores that closely align with human IELTS examiners. While it\'s an excellent practice tool, we recommend getting human feedback from certified IELTS examiners before your actual exam.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What kind of feedback do I get on my IELTS essays?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'You receive comprehensive feedback including: (1) Band scores for all 4 IELTS criteria, (2) Overall band score, (3) Specific error identification with explanations, (4) Strengths and weaknesses analysis, (5) Actionable improvement suggestions, and (6) Vocabulary enhancement recommendations.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How long does it take to get my essay scored?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Our AI provides instant feedback! Most essays are analyzed and scored within 5 seconds. You\'ll receive your detailed band scores, error analysis, and improvement suggestions immediately after submission.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I track my progress over time?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! Registered users get access to a comprehensive progress dashboard showing band score trends over time, improvement areas, vocabulary growth, and writing patterns. You can visualize your improvement journey with interactive charts and graphs.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Does this follow official IELTS band descriptors?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! Our AI scoring system is built on official IELTS band descriptors published by Cambridge and IDP. We assess essays using the same 4 criteria that human IELTS examiners use: Task Achievement, Coherence and Cohesion, Lexical Resource, and Grammatical Range and Accuracy.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I get more free essays after using my quota?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! We understand that financial constraints shouldn\'t limit your learning. You can earn 6 additional free essays by inviting a friend to join IELTS4Life using your referral code. When your friend signs up with your code, both of you receive 6 bonus essays. You can continue inviting more friends to keep earning free essays and help others improve their IELTS writing!'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is my essay data private and secure?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, we take privacy seriously. Your essays are encrypted and stored securely. We never share your writing with third parties. You can delete your essays anytime from your dashboard. All data processing complies with GDPR and data protection regulations.'
+        }
+      }
+    ]
+  }
+
   return (
     <div className="flex flex-col">
       {/* Add JSON-LD structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       {/* Hero Section - Redesigned with brighter colors and modern layout */}
       <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-cyan-50 to-blue-50 py-12 md:py-20 lg:py-24">
@@ -372,6 +457,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection />
     </div>
   )
 }
