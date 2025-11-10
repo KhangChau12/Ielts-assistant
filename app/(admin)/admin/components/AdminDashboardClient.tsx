@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Zap, RefreshCw, BookOpen, Award, Brain } from 'lucide-react'
+import { Users, FileText, Zap, RefreshCw, BookOpen, Award, Brain, UserPlus, TrendingUp as TrendingUpIcon } from 'lucide-react'
+import { EnhancedUsersTable } from './EnhancedUsersTable'
 import {
   LineChart,
   Line,
@@ -31,11 +32,12 @@ interface AdminStats {
   totalOutputTokens: number
   scoreDistribution: { [key: string]: number }
   avgOverallScore: number
-  recentUsers: Array<{
+  allUsers: Array<{
     id: string
     email: string
     created_at: string
     role: string
+    essay_count: number
   }>
   essaysOverTime: Array<{
     date: string
@@ -60,6 +62,10 @@ interface AdminStats {
     date: string
     count: number
   }>
+  // Referral stats
+  totalInvitedUsers: number
+  uniqueReferrers: number
+  inviteConversionRate: number
 }
 
 interface AdminDashboardClientProps {
@@ -412,6 +418,66 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
         </Card>
       </div>
 
+      {/* Referral/Invite Program Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-purple-700">
+              Total Invited Users
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 p-2 shadow-md">
+              <UserPlus className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 bg-clip-text text-transparent">
+              {formatNumber(stats.totalInvitedUsers)}
+            </div>
+            <p className="text-xs text-purple-600 mt-1">
+              Users joined via referral
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-pink-700">
+              Active Referrers
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 p-2 shadow-md">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-pink-700 to-rose-700 bg-clip-text text-transparent">
+              {formatNumber(stats.uniqueReferrers)}
+            </div>
+            <p className="text-xs text-pink-600 mt-1">
+              Users who invited friends
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '1.1s' }}>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-rose-700">
+              Conversion Rate
+            </CardTitle>
+            <div className="rounded-lg bg-gradient-to-br from-rose-500 to-orange-600 p-2 shadow-md">
+              <TrendingUpIcon className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold bg-gradient-to-r from-rose-700 to-orange-700 bg-clip-text text-transparent">
+              {stats.inviteConversionRate}%
+            </div>
+            <p className="text-xs text-rose-600 mt-1">
+              Of total users came via invite
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Essay Activity */}
@@ -654,85 +720,8 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
         </CardContent>
       </Card>
 
-      {/* Recent Users Table */}
-      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Recent Users</CardTitle>
-          <CardDescription className="text-xs md:text-sm">Last 10 registered users</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          {stats.recentUsers.length > 0 ? (
-            <>
-              {/* Mobile Card View */}
-              <div className="md:hidden space-y-3">
-                {stats.recentUsers.map((user) => (
-                  <div key={user.id} className="border border-ocean-200 rounded-lg p-3 bg-white">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="text-sm text-ocean-800 font-medium break-all flex-1 pr-2">{user.email}</p>
-                      <Badge
-                        variant={user.role === 'admin' ? 'default' : 'secondary'}
-                        className={`text-xs whitespace-nowrap ${
-                          user.role === 'admin'
-                            ? 'bg-cyan-600 hover:bg-cyan-700'
-                            : 'bg-ocean-200 text-ocean-800 hover:bg-ocean-300'
-                        }`}
-                      >
-                        {user.role}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-ocean-600">
-                      {format(new Date(user.created_at), 'MMM dd, yyyy HH:mm')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-ocean-200">
-                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Email</th>
-                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Role</th>
-                      <th className="text-left py-3 px-4 text-ocean-700 font-semibold text-sm">Created At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.recentUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="border-b border-ocean-100 hover:bg-ocean-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-ocean-800 text-sm">{user.email}</td>
-                        <td className="py-3 px-4">
-                          <Badge
-                            variant={user.role === 'admin' ? 'default' : 'secondary'}
-                            className={
-                              user.role === 'admin'
-                                ? 'bg-cyan-600 hover:bg-cyan-700'
-                                : 'bg-ocean-200 text-ocean-800 hover:bg-ocean-300'
-                            }
-                          >
-                            {user.role}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-ocean-600 text-sm">
-                          {format(new Date(user.created_at), 'MMM dd, yyyy HH:mm')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <div className="py-12 text-center text-ocean-600">
-              <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p>No users found</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Enhanced Users Table with pagination and search */}
+      <EnhancedUsersTable users={stats.allUsers} />
     </>
   )
 }

@@ -12,11 +12,12 @@ interface AdminStats {
   totalOutputTokens: number
   scoreDistribution: { [key: string]: number }
   avgOverallScore: number
-  recentUsers: Array<{
+  allUsers: Array<{
     id: string
     email: string
     created_at: string
     role: string
+    essay_count: number
   }>
   essaysOverTime: Array<{
     date: string
@@ -41,12 +42,28 @@ interface AdminStats {
     date: string
     count: number
   }>
+  // Referral stats
+  totalInvitedUsers: number
+  uniqueReferrers: number
+  inviteConversionRate: number
 }
 
 async function getAdminStats(): Promise<AdminStats> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
   try {
+    // Determine the base URL based on environment
+    let baseUrl: string
+
+    if (process.env.VERCEL_URL) {
+      // Running on Vercel
+      baseUrl = `https://${process.env.VERCEL_URL}`
+    } else if (process.env.NODE_ENV === 'development') {
+      // Local development - try common ports
+      baseUrl = 'http://localhost:3001' // Your dev server port
+    } else {
+      // Production fallback
+      baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ielts4life.com'
+    }
+
     const response = await fetch(`${baseUrl}/api/admin/stats`, {
       cache: 'no-store',
       headers: {
@@ -70,7 +87,7 @@ async function getAdminStats(): Promise<AdminStats> {
       totalOutputTokens: 0,
       scoreDistribution: {},
       avgOverallScore: 0,
-      recentUsers: [],
+      allUsers: [],
       essaysOverTime: [],
       totalVocabulary: 0,
       totalQuizAttempts: 0,
@@ -81,6 +98,9 @@ async function getAdminStats(): Promise<AdminStats> {
       avgTopicScore: 0,
       quizAttemptsOverTime: [],
       usersOverTime: [],
+      totalInvitedUsers: 0,
+      uniqueReferrers: 0,
+      inviteConversionRate: 0,
     }
   }
 }

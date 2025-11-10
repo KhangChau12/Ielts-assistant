@@ -38,10 +38,11 @@ export async function GET() {
       { data: tokenUsage },
       { data: allEssaysForScoring },
       { data: essaysLast14Days },
-      { data: recentUsers },
+      { data: allUsersWithEssays },
       { data: allUsers },
       { count: totalVocabulary },
       { data: quizAttempts },
+      { data: inviteStats },
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('essays').select('*', { count: 'exact', head: true }),
@@ -50,12 +51,20 @@ export async function GET() {
       supabase.from('essays').select('overall_score').order('created_at', { ascending: false }),
       // Get essays from last 14 days for chart
       supabase.from('essays').select('created_at').gte('created_at', fourteenDaysAgoISO).order('created_at', { ascending: true }),
-      // Get recent 10 users for table
-      supabase.from('profiles').select('id, email, created_at, role').order('created_at', { ascending: false }).limit(10),
+      // Get ALL users with essay counts
+      supabase.from('profiles').select(`
+        id,
+        email,
+        created_at,
+        role,
+        essays:essays(count)
+      `).order('created_at', { ascending: false }),
       // Get all users for growth chart and counts
       supabase.from('profiles').select('id, email, created_at').order('created_at', { ascending: true }),
       supabase.from('vocabulary').select('*', { count: 'exact', head: true }),
       supabase.from('vocabulary_quiz_attempts').select('score, total_questions, vocab_type, created_at'),
+      // Get invite/referral stats
+      supabase.from('profiles').select('invited_by'),
     ])
 
     // Calculate token statistics
@@ -111,6 +120,20 @@ export async function GET() {
     // Pro users who are NOT PTNK (future paid subscribers)
     const paidProUsers = 0 // Currently we don't have paid subscriptions yet
 
+    // Calculate referral/invite statistics
+    const totalInvitedUsers = inviteStats?.filter(p => p.invited_by !== null).length || 0
+    const uniqueReferrers = new Set(inviteStats?.filter(p => p.invited_by !== null).map(p => p.invited_by)).size
+    const inviteConversionRate = totalUsers > 0 ? (totalInvitedUsers / (totalUsers || 1)) * 100 : 0
+
+    // Format users with essay counts
+    const usersWithEssayCounts = allUsersWithEssays?.map(user => ({
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+      role: user.role,
+      essay_count: Array.isArray(user.essays) ? user.essays[0]?.count || 0 : 0
+    })) || []
+
     // User growth over last 14 days (CUMULATIVE - total users up to each day)
     const today = new Date()
     const userGrowthData: Array<{ date: string; count: number }> = []
@@ -158,7 +181,7 @@ export async function GET() {
       totalOutputTokens,
       scoreDistribution,
       avgOverallScore: Math.round(avgOverallScore * 10) / 10,
-      recentUsers: recentUsers || [],
+      allUsers: usersWithEssayCounts,
       essaysOverTime: essaysGrowthData,
       // Vocabulary stats
       totalVocabulary: totalVocabulary || 0,
@@ -170,6 +193,10 @@ export async function GET() {
       avgTopicScore: Math.round(avgTopicScore * 10) / 10,
       quizAttemptsOverTime,
       usersOverTime: userGrowthData,
+      // Referral/Invite stats
+      totalInvitedUsers,
+      uniqueReferrers,
+      inviteConversionRate: Math.round(inviteConversionRate * 10) / 10,
     })
   } catch (error) {
     console.error('Error fetching admin stats:', error)
