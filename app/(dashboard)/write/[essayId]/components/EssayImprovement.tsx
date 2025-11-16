@@ -325,7 +325,7 @@ export function EssayImprovement({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
             <Sparkles className="h-5 w-5 text-cyan-600" />
-            Improved Essay (Band 8-9 Example)
+            Improved Essay (Band 7-8+ Example)
           </CardTitle>
           <CheckCircle className="h-5 w-5 text-green-600" />
         </div>
