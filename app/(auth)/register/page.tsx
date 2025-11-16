@@ -285,12 +285,12 @@ export default function RegisterPage() {
               <div className="bg-ocean-50/50 border border-ocean-200 rounded-lg p-3">
                 <Label htmlFor="inviteCode" className="text-ocean-700 text-sm flex items-center gap-2">
                   <Gift className="w-4 h-4 text-ocean-600" />
-                  Invite Code (Optional)
+                  Invite or Promo Code (Optional)
                 </Label>
                 <Input
                   id="inviteCode"
                   type="text"
-                  placeholder="Enter code for 3 bonus essays"
+                  placeholder="your code"
                   className="mt-2 h-10 border-ocean-200 focus:border-ocean-400 uppercase"
                   disabled={isLoading}
                   {...register('inviteCode')}
@@ -298,7 +298,7 @@ export default function RegisterPage() {
                     e.target.value = e.target.value.toUpperCase()
                   }}
                 />
-                <p className="text-xs text-ocean-500 mt-1">Your friend will get +6 essays, you get +3</p>
+                <p className="text-xs text-ocean-500 mt-1">Use a promo code for bonus essays, or a friend's invite code</p>
               </div>
 
               <div className="space-y-2">

@@ -58,3 +58,29 @@ export const INVITE_BONUSES = {
   INVITER: 6,  // Person who shares the code gets 6 essays
   INVITED: 3,  // Person who uses the code gets 3 essays
 } as const
+
+/**
+ * Promo codes and their bonus amounts
+ * Hardcoded promotional codes that give bonus essays
+ */
+export const PROMO_CODES = {
+  'GET10FREE': 10,  // Get 10 free essays
+  'get10free': 10,
+  'Get10free': 10,
+} as const
+
+/**
+ * Check if a code is a valid promo code
+ */
+export function isPromoCode(code: string): boolean {
+  const cleanCode = cleanInviteCode(code)
+  return cleanCode in PROMO_CODES
+}
+
+/**
+ * Get bonus amount for a promo code
+ */
+export function getPromoCodeBonus(code: string): number {
+  const cleanCode = cleanInviteCode(code) as keyof typeof PROMO_CODES
+  return PROMO_CODES[cleanCode] || 0
+}

@@ -2,7 +2,7 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { cleanInviteCode, INVITE_BONUSES } from '@/lib/invite/utils'
+import { cleanInviteCode, INVITE_BONUSES, isPromoCode, getPromoCodeBonus } from '@/lib/invite/utils'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
@@ -91,154 +91,196 @@ export async function GET(request: NextRequest) {
         logger.auth('✅ Profile created')
       }
 
-      // Apply invite code if provided
+      // Apply invite code or promo code if provided
       const inviteCode = user.user_metadata.invite_code
-      logger.auth('Invite code from metadata:', inviteCode)
+      logger.auth('Code from metadata:', inviteCode)
 
       if (inviteCode) {
         try {
           const cleanCode = cleanInviteCode(inviteCode)
-          logger.auth('🎁 Processing invite code:', cleanCode)
 
-          // Find inviter
-          const { data: inviter, error: inviterError } = await supabase
-            .from('profiles')
-            .select('id, email, invite_bonus_essays')
-            .eq('invite_code', cleanCode)
-            .single()
+          // Check if it's a promo code first
+          if (isPromoCode(cleanCode)) {
+            const promoBonus = getPromoCodeBonus(cleanCode)
+            logger.auth(`🎁 Processing promo code: ${cleanCode} (+${promoBonus} essays)`)
 
-          if (inviterError) {
-            logger.auth('❌ Inviter not found:', inviterError.message)
-          } else if (inviter.id === user.id) {
-            logger.auth('❌ Self-invite blocked')
-          } else {
-            logger.auth('✅ Inviter found:', inviter.email)
-
-            // Update invited user (new user gets +3 essays)
-            const { error: invitedUpdateError } = await supabase
+            // Apply promo code bonus
+            const { error: promoUpdateError } = await supabase
               .from('profiles')
               .update({
-                invited_by: inviter.id,
-                invite_bonus_essays: INVITE_BONUSES.INVITED  // +3 essays
+                invite_bonus_essays: promoBonus
               })
               .eq('id', user.id)
 
-            if (invitedUpdateError) {
-              logger.error('❌ Failed to update invited user:', invitedUpdateError)
+            if (promoUpdateError) {
+              logger.error('❌ Failed to apply promo code:', promoUpdateError)
             } else {
-              logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
+              logger.auth(`🎉 PROMO CODE SUCCESS! User got +${promoBonus} essays`)
+            }
+          } else {
+            // It's an invite code - find inviter
+            logger.auth('🎁 Processing invite code:', cleanCode)
 
-              // Update inviter (inviter gets +6 essays) using SECURITY DEFINER function
-              const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
-                inviter_user_id: inviter.id,
-                bonus_amount: INVITE_BONUSES.INVITER
-              })
+            const { data: inviter, error: inviterError } = await supabase
+              .from('profiles')
+              .select('id, email, invite_bonus_essays')
+              .eq('invite_code', cleanCode)
+              .single()
 
-              if (inviterUpdateError) {
-                logger.error('❌ Failed to update inviter:', inviterUpdateError)
+            if (inviterError) {
+              logger.auth('❌ Inviter not found:', inviterError.message)
+            } else if (inviter.id === user.id) {
+              logger.auth('❌ Self-invite blocked')
+            } else {
+              logger.auth('✅ Inviter found:', inviter.email)
+
+              // Update invited user (new user gets +3 essays)
+              const { error: invitedUpdateError } = await supabase
+                .from('profiles')
+                .update({
+                  invited_by: inviter.id,
+                  invite_bonus_essays: INVITE_BONUSES.INVITED  // +3 essays
+                })
+                .eq('id', user.id)
+
+              if (invitedUpdateError) {
+                logger.error('❌ Failed to update invited user:', invitedUpdateError)
               } else {
-                const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
-                logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
+                logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
 
-                // Record invite
-                const { error: recordError } = await supabase
-                  .from('invites')
-                  .insert({
-                    inviter_id: inviter.id,
-                    invited_id: user.id,
-                    bonus_applied: true
-                  })
+                // Update inviter (inviter gets +6 essays) using SECURITY DEFINER function
+                const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
+                  inviter_user_id: inviter.id,
+                  bonus_amount: INVITE_BONUSES.INVITER
+                })
 
-                if (recordError) {
-                  logger.error('❌ Failed to record invite:', recordError)
+                if (inviterUpdateError) {
+                  logger.error('❌ Failed to update inviter:', inviterUpdateError)
                 } else {
-                  logger.auth('🎉 INVITE BONUS SUCCESS!')
-                  logger.auth('📊 ${inviter.email} → ${user.email}')
+                  const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
+                  logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
+
+                  // Record invite
+                  const { error: recordError } = await supabase
+                    .from('invites')
+                    .insert({
+                      inviter_id: inviter.id,
+                      invited_id: user.id,
+                      bonus_applied: true
+                    })
+
+                  if (recordError) {
+                    logger.error('❌ Failed to record invite:', recordError)
+                  } else {
+                    logger.auth('🎉 INVITE BONUS SUCCESS!')
+                    logger.auth('📊 ${inviter.email} → ${user.email}')
+                  }
                 }
               }
             }
           }
         } catch (error) {
-          logger.error('❌ Invite processing error:', error)
+          logger.error('❌ Code processing error:', error)
         }
       } else {
-        logger.auth('ℹ️  No invite code provided')
+        logger.auth('ℹ️  No code provided')
       }
     } else if (canApplyInvite) {
       // Profile exists but was created recently and has no invite yet
-      logger.auth('🆕 Recent profile - can still apply invite code')
+      logger.auth('🆕 Recent profile - can still apply code')
 
       const inviteCode = user.user_metadata.invite_code
-      logger.auth('Invite code from metadata:', inviteCode)
+      logger.auth('Code from metadata:', inviteCode)
 
       if (inviteCode) {
         try {
           const cleanCode = cleanInviteCode(inviteCode)
-          logger.auth('🎁 Processing invite code:', cleanCode)
 
-          // Find inviter
-          const { data: inviter, error: inviterError } = await supabase
-            .from('profiles')
-            .select('id, email, invite_bonus_essays')
-            .eq('invite_code', cleanCode)
-            .single()
+          // Check if it's a promo code first
+          if (isPromoCode(cleanCode)) {
+            const promoBonus = getPromoCodeBonus(cleanCode)
+            logger.auth(`🎁 Processing promo code: ${cleanCode} (+${promoBonus} essays)`)
 
-          if (inviterError) {
-            logger.auth('❌ Inviter not found:', inviterError.message)
-          } else if (inviter.id === user.id) {
-            logger.auth('❌ Self-invite blocked')
-          } else {
-            logger.auth('✅ Inviter found:', inviter.email)
-
-            // Update invited user (gets +3 essays)
-            const { error: invitedUpdateError } = await supabase
+            // Apply promo code bonus
+            const { error: promoUpdateError } = await supabase
               .from('profiles')
               .update({
-                invited_by: inviter.id,
-                invite_bonus_essays: INVITE_BONUSES.INVITED
+                invite_bonus_essays: promoBonus
               })
               .eq('id', user.id)
 
-            if (invitedUpdateError) {
-              logger.error('❌ Failed to update invited user:', invitedUpdateError)
+            if (promoUpdateError) {
+              logger.error('❌ Failed to apply promo code:', promoUpdateError)
             } else {
-              logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
+              logger.auth(`🎉 PROMO CODE SUCCESS! User got +${promoBonus} essays`)
+            }
+          } else {
+            // It's an invite code - find inviter
+            logger.auth('🎁 Processing invite code:', cleanCode)
 
-              // Update inviter (gets +6 essays) using SECURITY DEFINER function
-              const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
-                inviter_user_id: inviter.id,
-                bonus_amount: INVITE_BONUSES.INVITER
-              })
+            const { data: inviter, error: inviterError } = await supabase
+              .from('profiles')
+              .select('id, email, invite_bonus_essays')
+              .eq('invite_code', cleanCode)
+              .single()
 
-              if (inviterUpdateError) {
-                logger.error('❌ Failed to update inviter:', inviterUpdateError)
+            if (inviterError) {
+              logger.auth('❌ Inviter not found:', inviterError.message)
+            } else if (inviter.id === user.id) {
+              logger.auth('❌ Self-invite blocked')
+            } else {
+              logger.auth('✅ Inviter found:', inviter.email)
+
+              // Update invited user (gets +3 essays)
+              const { error: invitedUpdateError } = await supabase
+                .from('profiles')
+                .update({
+                  invited_by: inviter.id,
+                  invite_bonus_essays: INVITE_BONUSES.INVITED
+                })
+                .eq('id', user.id)
+
+              if (invitedUpdateError) {
+                logger.error('❌ Failed to update invited user:', invitedUpdateError)
               } else {
-                const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
-                logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
+                logger.auth('✅ Invited user got +${INVITE_BONUSES.INVITED} essays')
 
-                // Record invite
-                const { error: recordError } = await supabase
-                  .from('invites')
-                  .insert({
-                    inviter_id: inviter.id,
-                    invited_id: user.id,
-                    bonus_applied: true
-                  })
+                // Update inviter (gets +6 essays) using SECURITY DEFINER function
+                const { error: inviterUpdateError } = await supabase.rpc('increment_inviter_bonus', {
+                  inviter_user_id: inviter.id,
+                  bonus_amount: INVITE_BONUSES.INVITER
+                })
 
-                if (recordError) {
-                  logger.error('❌ Failed to record invite:', recordError)
+                if (inviterUpdateError) {
+                  logger.error('❌ Failed to update inviter:', inviterUpdateError)
                 } else {
-                  logger.auth('🎉 INVITE BONUS SUCCESS!')
-                  logger.auth('📊 ${inviter.email} → ${user.email}')
+                  const newInviterBonus = (inviter.invite_bonus_essays || 0) + INVITE_BONUSES.INVITER
+                  logger.auth('✅ Inviter got +${INVITE_BONUSES.INVITER} essays (total: ${newInviterBonus})')
+
+                  // Record invite
+                  const { error: recordError } = await supabase
+                    .from('invites')
+                    .insert({
+                      inviter_id: inviter.id,
+                      invited_id: user.id,
+                      bonus_applied: true
+                    })
+
+                  if (recordError) {
+                    logger.error('❌ Failed to record invite:', recordError)
+                  } else {
+                    logger.auth('🎉 INVITE BONUS SUCCESS!')
+                    logger.auth('📊 ${inviter.email} → ${user.email}')
+                  }
                 }
               }
             }
           }
         } catch (error) {
-          logger.error('❌ Invite processing error:', error)
+          logger.error('❌ Code processing error:', error)
         }
       } else {
-        logger.auth('ℹ️  No invite code in metadata')
+        logger.auth('ℹ️  No code in metadata')
       }
     } else {
       logger.auth('ℹ️  Profile exists - cannot apply invite (too old or already has invite)')
