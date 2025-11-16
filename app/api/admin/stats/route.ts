@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = createServerClient()
@@ -123,7 +126,8 @@ export async function GET() {
     // Calculate referral/invite statistics
     const totalInvitedUsers = inviteStats?.filter(p => p.invited_by !== null).length || 0
     const uniqueReferrers = new Set(inviteStats?.filter(p => p.invited_by !== null).map(p => p.invited_by)).size
-    const inviteConversionRate = totalUsers > 0 ? (totalInvitedUsers / (totalUsers || 1)) * 100 : 0
+    const totalUsersCount = totalUsers || 0
+    const inviteConversionRate = totalUsersCount > 0 ? (totalInvitedUsers / totalUsersCount) * 100 : 0
 
     // Format users with essay counts
     const usersWithEssayCounts = allUsersWithEssays?.map(user => ({
