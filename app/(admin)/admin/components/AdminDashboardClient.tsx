@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Zap, RefreshCw, BookOpen, Award, Brain, UserPlus, TrendingUp as TrendingUpIcon } from 'lucide-react'
+import { Users, FileText, Zap, RefreshCw, BookOpen, Award, Brain, UserPlus, TrendingUp as TrendingUpIcon, Target } from 'lucide-react'
 import { EnhancedUsersTable } from './EnhancedUsersTable'
 import {
   LineChart,
@@ -20,6 +20,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  AreaChart,
+  Area,
 } from 'recharts'
 import { format } from 'date-fns'
 
@@ -99,31 +101,50 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
     }
   }
 
-  // Prepare daily essay activity data (NEW essays per day, not cumulative)
+  // Unified color palette - Ocean/Teal theme
+  const COLORS = {
+    primary: '#0891b2',      // cyan-600
+    secondary: '#0e7490',    // cyan-700
+    tertiary: '#155e75',     // cyan-800
+    light: '#67e8f9',        // cyan-300
+    lighter: '#a5f3fc',      // cyan-200
+    accent: '#14b8a6',       // teal-500
+    accentDark: '#0d9488',   // teal-600
+  }
+
+  // Prepare daily essay activity data (NEW essays per day)
   const dailyEssayActivityData = stats.essaysOverTime
-    .slice(-10)
+    .slice(-14)
     .map((item, index, arr) => {
-      // Calculate new essays for this day (difference from previous day)
       const newEssays = index === 0 ? item.count : item.count - arr[index - 1].count
       return {
         date: format(new Date(item.date), 'MMM dd'),
-        count: newEssays
+        essays: newEssays
       }
     })
 
-  // Prepare score distribution data (Band 8-9 merged)
-  const scoreDistributionData = [5, 6, 7, 8].map((score) => ({
-    score: score === 8 ? 'Band 8-9' : `Band ${score}`,
-    count: stats.scoreDistribution[score] || 0,
-  }))
+  // Prepare score distribution data
+  const scoreDistributionData = [
+    { band: 'Band 5', count: stats.scoreDistribution[5] || 0 },
+    { band: 'Band 6', count: stats.scoreDistribution[6] || 0 },
+    { band: 'Band 7', count: stats.scoreDistribution[7] || 0 },
+    { band: 'Band 8-9', count: (stats.scoreDistribution[8] || 0) + (stats.scoreDistribution[9] || 0) },
+  ]
 
-  // Prepare essays over time data (CUMULATIVE - already calculated in backend)
-  const essaysOverTimeData = stats.essaysOverTime.map(item => ({
+  // User type distribution for donut chart
+  const userTypeData = [
+    { name: 'Free Users', value: stats.totalUsers - stats.ptnkUsers - stats.paidProUsers, color: COLORS.light },
+    { name: 'PTNK Students', value: stats.ptnkUsers, color: COLORS.accent },
+    { name: 'Paid Pro', value: stats.paidProUsers, color: COLORS.secondary },
+  ]
+
+  // User growth over time
+  const userGrowthData = stats.usersOverTime.slice(-14).map(item => ({
     date: format(new Date(item.date), 'MMM dd'),
-    essays: item.count
+    users: item.count
   }))
 
-  // Prepare quiz performance data
+  // Quiz performance over time
   const quizPerformanceData = stats.quizAttemptsOverTime
     ?.reduce((acc: any[], quiz) => {
       const date = format(new Date(quiz.created_at), 'MMM dd')
@@ -131,95 +152,127 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
       if (existing) {
         existing.attempts += 1
         existing.totalPercentage += quiz.percentage
-        existing.avgPercentage = existing.totalPercentage / existing.attempts
+        existing.avgScore = existing.totalPercentage / existing.attempts
       } else {
         acc.push({
           date,
           attempts: 1,
           totalPercentage: quiz.percentage,
-          avgPercentage: quiz.percentage,
+          avgScore: quiz.percentage,
         })
       }
       return acc
     }, [])
     .slice(-14) || []
 
-  // Token usage pie chart data - Soft pastel colors
-  const tokenPieData = [
-    { name: 'Input Tokens', value: stats.totalInputTokens, color: '#67e8f9' }, // cyan-300
-    { name: 'Output Tokens', value: stats.totalOutputTokens, color: '#c4b5fd' }, // violet-300
-  ]
-
-  // User type distribution pie chart data - Soft pastel colors
-  const userTypeData = [
-    { name: 'Free Users', value: stats.totalUsers - stats.ptnkUsers - stats.paidProUsers, color: '#93c5fd' }, // blue-300
-    { name: 'PTNK Students', value: stats.ptnkUsers, color: '#6ee7b7' }, // emerald-300
-    { name: 'Paid Pro', value: stats.paidProUsers, color: '#fcd34d' }, // amber-300
-  ]
-
-  const COLORS = {
-    ocean: ['#67e8f9', '#93c5fd', '#6ee7b7', '#c4b5fd'],
-    users: ['#93c5fd', '#6ee7b7', '#fcd34d'],
-    tokens: ['#67e8f9', '#c4b5fd'],
-  }
-
   return (
-    <>
-      {/* Refresh Button and Last Update */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
-        <p className="text-xs md:text-sm text-ocean-600">
-          Last updated: {format(lastUpdate, 'MMM dd, yyyy HH:mm:ss')}
-        </p>
+    <div className="space-y-6">
+      {/* Header with Refresh Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-700 to-teal-600 bg-clip-text text-transparent">
+            Dashboard Overview
+          </h1>
+          <p className="text-sm text-slate-600 mt-1">
+            Last updated: {format(lastUpdate, 'MMM dd, yyyy HH:mm:ss')}
+          </p>
+        </div>
         <Button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          variant="outline"
-          className="border-ocean-300 text-ocean-700 hover:bg-ocean-50 transition-all text-sm"
+          className="bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
-      {/* Overview Stats Cards - Row 1 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {/* User Type Distribution Pie Chart */}
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
-          <CardHeader className="p-4 md:p-6">
+      {/* KPI Summary Cards - Top Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Users */}
+        <Card className="border-l-4 border-l-cyan-500 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
-                  User Distribution
-                </CardTitle>
-                <CardDescription className="mt-1 text-xs md:text-sm">Total: {formatNumber(stats.totalUsers)} users</CardDescription>
-              </div>
-              <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
-                <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
-              </div>
+              <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
+              <Users className="h-5 w-5 text-cyan-600" />
             </div>
           </CardHeader>
-          <CardContent className="p-4 md:p-6">
-            <ResponsiveContainer width="100%" height={200}>
+          <CardContent>
+            <div className="text-3xl font-bold text-cyan-700">{formatNumber(stats.totalUsers)}</div>
+            <p className="text-xs text-slate-500 mt-1">
+              <span className="text-teal-600 font-semibold">{stats.totalInvitedUsers}</span> via referrals
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Total Essays */}
+        <Card className="border-l-4 border-l-teal-500 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Total Essays</CardTitle>
+              <FileText className="h-5 w-5 text-teal-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-teal-700">{formatNumber(stats.totalEssays)}</div>
+            <p className="text-xs text-slate-500 mt-1">
+              Avg score: <span className="text-teal-600 font-semibold">{stats.avgOverallScore.toFixed(1)}</span>
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Vocabulary Words */}
+        <Card className="border-l-4 border-l-cyan-600 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Vocabulary</CardTitle>
+              <BookOpen className="h-5 w-5 text-cyan-700" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-cyan-800">{formatNumber(stats.totalVocabulary)}</div>
+            <p className="text-xs text-slate-500 mt-1">
+              <span className="text-cyan-700 font-semibold">{formatNumber(stats.totalQuizAttempts)}</span> quiz attempts
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Quiz Performance */}
+        <Card className="border-l-4 border-l-teal-600 hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-slate-600">Quiz Score</CardTitle>
+              <Award className="h-5 w-5 text-teal-700" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-teal-800">{stats.avgQuizScore}%</div>
+            <p className="text-xs text-slate-500 mt-1">
+              <span className="text-teal-700 font-semibold">{formatNumber(stats.totalCorrectAnswers)}</span> / {formatNumber(stats.totalQuestions)} correct
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Charts - 2 Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* User Distribution Donut Chart */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-lg text-slate-800">User Distribution</CardTitle>
+            <CardDescription>By account type</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <defs>
-                  <filter id="glow-user">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
                 <Pie
                   data={userTypeData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={2}
                   dataKey="value"
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.4))' }}
                 >
                   {userTypeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -228,500 +281,248 @@ export function AdminDashboardClient({ initialStats }: AdminDashboardClientProps
                 <Tooltip
                   formatter={(value: any) => formatNumber(value)}
                   contentStyle={{
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
-              <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#93c5fd' }}></div>
-                <span className="text-ocean-700">Free: <strong>{stats.totalUsers - stats.ptnkUsers - stats.paidProUsers}</strong></span>
+            <div className="flex flex-wrap gap-4 mt-4 justify-center text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.light }}></div>
+                <span className="text-slate-600">Free: <strong>{userTypeData[0].value}</strong></span>
               </div>
-              <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#6ee7b7' }}></div>
-                <span className="text-ocean-700">PTNK: <strong>{stats.ptnkUsers}</strong></span>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.accent }}></div>
+                <span className="text-slate-600">PTNK: <strong>{userTypeData[1].value}</strong></span>
               </div>
-              <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#fcd34d' }}></div>
-                <span className="text-ocean-700">Paid Pro: <strong>{stats.paidProUsers}</strong></span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Token Usage Pie Chart */}
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
-          <CardHeader className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base md:text-lg bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">
-                  Token Usage
-                </CardTitle>
-                <CardDescription className="mt-1 text-xs md:text-sm">Total: {formatNumber(stats.totalInputTokens + stats.totalOutputTokens)} tokens</CardDescription>
-              </div>
-              <div className="rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 p-2 shadow-md">
-                <Zap className="h-4 w-4 md:h-5 md:w-5 text-white" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <defs>
-                  <filter id="glow-token">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <Pie
-                  data={tokenPieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(167, 139, 250, 0.4))' }}
-                >
-                  {tokenPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: any) => formatNumber(value)}
-                  contentStyle={{
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
-                    borderRadius: '8px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-2 md:gap-4 mt-4 justify-center text-xs md:text-sm">
-              <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#67e8f9' }}></div>
-                <span className="text-ocean-700">Input: <strong>{formatNumber(stats.totalInputTokens)}</strong></span>
-              </div>
-              <div className="flex items-center gap-1 md:gap-2">
-                <div className="w-2 h-2 md:w-3 md:h-3 rounded-full" style={{ backgroundColor: '#c4b5fd' }}></div>
-                <span className="text-ocean-700">Output: <strong>{formatNumber(stats.totalOutputTokens)}</strong></span>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.secondary }}></div>
+                <span className="text-slate-600">Pro: <strong>{userTypeData[2].value}</strong></span>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-cyan-700">
-              Total Essays
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 p-2 shadow-md">
-              <FileText className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-700 to-blue-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalEssays)}
-            </div>
-            <p className="text-xs text-cyan-600 mt-1">Essays submitted</p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-ocean-700">
-              Avg Essay Score
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-ocean-500 to-cyan-600 p-2 shadow-md">
-              <Award className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-ocean-700 to-cyan-700 bg-clip-text text-transparent">
-              {stats.avgOverallScore.toFixed(1)}
-            </div>
-            <p className="text-xs text-ocean-600 mt-1">Band score average</p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-teal-700">
-              Total Vocabulary
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 p-2 shadow-md">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-teal-700 to-emerald-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalVocabulary)}
-            </div>
-            <p className="text-xs text-teal-600 mt-1">Words generated</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quiz Performance Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-700">
-              Quiz Performance
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 p-2 shadow-md">
-              <Award className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">
-              {stats.avgQuizScore}%
-            </div>
-            <div className="flex gap-3 mt-2">
-              <p className="text-xs text-green-600">
-                Paraphrase: <span className="font-semibold">{stats.avgParaphraseScore}%</span>
-              </p>
-              <p className="text-xs text-teal-600">
-                Topic: <span className="font-semibold">{stats.avgTopicScore}%</span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">
-              Total Quiz Attempts
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-green-500 to-lime-600 p-2 shadow-md">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-green-700 to-lime-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalQuizAttempts)}
-            </div>
-            <p className="text-xs text-green-600 mt-1">
-              {formatNumber(stats.totalCorrectAnswers)} correct / {formatNumber(stats.totalQuestions)} total
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Referral/Invite Program Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700">
-              Total Invited Users
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 p-2 shadow-md">
-              <UserPlus className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 bg-clip-text text-transparent">
-              {formatNumber(stats.totalInvitedUsers)}
-            </div>
-            <p className="text-xs text-purple-600 mt-1">
-              Users joined via referral
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-pink-700">
-              Active Referrers
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 p-2 shadow-md">
-              <Users className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-pink-700 to-rose-700 bg-clip-text text-transparent">
-              {formatNumber(stats.uniqueReferrers)}
-            </div>
-            <p className="text-xs text-pink-600 mt-1">
-              Users who invited friends
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="card-premium shadow-card hover:shadow-hover hover-lift transition-all animate-fadeInUp" style={{ animationDelay: '1.1s' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-rose-700">
-              Conversion Rate
-            </CardTitle>
-            <div className="rounded-lg bg-gradient-to-br from-rose-500 to-orange-600 p-2 shadow-md">
-              <TrendingUpIcon className="h-5 w-5 text-white" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-rose-700 to-orange-700 bg-clip-text text-transparent">
-              {stats.inviteConversionRate}%
-            </div>
-            <p className="text-xs text-rose-600 mt-1">
-              Of total users came via invite
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Daily Essay Activity */}
-        <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+        {/* Score Distribution Bar Chart */}
+        <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Daily Essay Activity</CardTitle>
-            <CardDescription>Essay submissions over the last 10 days</CardDescription>
+            <CardTitle className="text-lg text-slate-800">Score Distribution</CardTitle>
+            <CardDescription>Essays by IELTS band</CardDescription>
           </CardHeader>
           <CardContent>
-            {dailyEssayActivityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dailyEssayActivityData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#0c4a6e"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis
-                    stroke="#0c4a6e"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#f0f9ff',
-                      border: '1px solid #bae6fd',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill="#67e8f9"
-                    name="Essays"
-                    radius={[8, 8, 0, 0]}
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(103, 232, 249, 0.3))' }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-ocean-600">
-                <p>No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Score Distribution */}
-        <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
-          <CardHeader>
-            <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Score Distribution</CardTitle>
-            <CardDescription>Essays by band score</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {scoreDistributionData.some((d) => d.count > 0) ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={scoreDistributionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
-                  <XAxis
-                    dataKey="score"
-                    stroke="#0c4a6e"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis
-                    stroke="#0c4a6e"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#f0f9ff',
-                      border: '1px solid #bae6fd',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill="#67e8f9"
-                    name="Essays"
-                    radius={[8, 8, 0, 0]}
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(103, 232, 249, 0.3))' }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-ocean-600">
-                <p>No scored essays yet</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Essays Over Time Chart */}
-      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
-        <CardHeader>
-          <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">Essays Over Time</CardTitle>
-          <CardDescription>Cumulative essay count - always growing! 📈</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {essaysOverTimeData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={essaysOverTimeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={scoreDistributionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
-                  dataKey="date"
-                  stroke="#0c4a6e"
+                  dataKey="band"
+                  stroke="#64748b"
                   style={{ fontSize: '12px' }}
+                  axisLine={false}
+                  tickLine={false}
                 />
                 <YAxis
-                  stroke="#0c4a6e"
+                  stroke="#64748b"
                   style={{ fontSize: '12px' }}
+                  axisLine={false}
+                  tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                  cursor={{ fill: '#f1f5f9' }}
+                />
+                <Bar
+                  dataKey="count"
+                  fill={COLORS.primary}
+                  radius={[8, 8, 0, 0]}
+                  name="Essays"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Activity Charts - Full Width */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Daily Essay Activity */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-lg text-slate-800">Daily Essay Activity</CardTitle>
+            <CardDescription>New essays submitted per day (Last 14 days)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={dailyEssayActivityData}>
+                <defs>
+                  <linearGradient id="colorEssays" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#64748b"
+                  style={{ fontSize: '12px' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  stroke="#64748b"
+                  style={{ fontSize: '12px' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                   }}
                 />
-                <Legend />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="essays"
-                  stroke="#67e8f9"
-                  strokeWidth={3}
-                  dot={{ fill: '#67e8f9', r: 5, filter: 'drop-shadow(0 0 4px rgba(103, 232, 249, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#67e8f9', filter: 'drop-shadow(0 0 6px rgba(103, 232, 249, 0.6))' }}
-                  name="Total Essays"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(103, 232, 249, 0.3))' }}
+                  stroke={COLORS.primary}
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorEssays)"
+                  name="New Essays"
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="h-[350px] flex items-center justify-center text-ocean-600">
-              <p>No essay data available</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Quiz Performance Over Time Chart */}
-      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '1.0s' }}>
-        <CardHeader>
-          <CardTitle className="bg-gradient-to-r from-teal-700 to-emerald-700 bg-clip-text text-transparent">Quiz Performance Over Time</CardTitle>
-          <CardDescription>Average quiz accuracy trends over the last 14 days</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {quizPerformanceData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={quizPerformanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
+        {/* User Growth */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="text-lg text-slate-800">User Growth</CardTitle>
+            <CardDescription>Total registered users (Last 14 days)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={userGrowthData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  stroke="#0c4a6e"
+                  stroke="#64748b"
                   style={{ fontSize: '12px' }}
+                  axisLine={false}
+                  tickLine={false}
                 />
                 <YAxis
-                  stroke="#0c4a6e"
+                  stroke="#64748b"
                   style={{ fontSize: '12px' }}
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
+                  axisLine={false}
+                  tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: any) => `${Math.round(value)}%`}
+                  formatter={(value: any) => formatNumber(value)}
                 />
-                <Legend />
                 <Line
                   type="monotone"
-                  dataKey="avgPercentage"
-                  stroke="#6ee7b7"
+                  dataKey="users"
+                  stroke={COLORS.accent}
                   strokeWidth={3}
-                  dot={{ fill: '#6ee7b7', r: 5, filter: 'drop-shadow(0 0 4px rgba(110, 231, 183, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#6ee7b7', filter: 'drop-shadow(0 0 6px rgba(110, 231, 183, 0.6))' }}
-                  name="Average Score"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(110, 231, 183, 0.3))' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[350px] flex items-center justify-center text-ocean-600">
-              <p>No quiz data available</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* User Growth Over Time Chart */}
-      <Card className="card-premium shadow-colored hover-glow transition-all animate-fadeInUp" style={{ animationDelay: '1.1s' }}>
-        <CardHeader>
-          <CardTitle className="bg-gradient-to-r from-ocean-800 to-cyan-700 bg-clip-text text-transparent">User Growth</CardTitle>
-          <CardDescription>Total user count over the last 14 days</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {stats.usersOverTime.length > 0 ? (
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={stats.usersOverTime.map(item => ({
-                ...item,
-                displayDate: format(new Date(item.date), 'MMM dd')
-              }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0f2fe" />
-                <XAxis
-                  dataKey="displayDate"
-                  stroke="#0c4a6e"
-                  style={{ fontSize: '12px' }}
-                />
-                <YAxis
-                  stroke="#0c4a6e"
-                  style={{ fontSize: '12px' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#f0f9ff',
-                    border: '1px solid #bae6fd',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value: any) => [`${formatNumber(value)} users`, 'Total Users']}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#67e8f9"
-                  strokeWidth={3}
-                  dot={{ fill: '#67e8f9', r: 5, filter: 'drop-shadow(0 0 4px rgba(103, 232, 249, 0.5))' }}
-                  activeDot={{ r: 7, fill: '#67e8f9', filter: 'drop-shadow(0 0 6px rgba(103, 232, 249, 0.6))' }}
+                  dot={{ fill: COLORS.accent, r: 4 }}
+                  activeDot={{ r: 6 }}
                   name="Total Users"
-                  style={{ filter: 'drop-shadow(0 0 3px rgba(103, 232, 249, 0.3))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="h-[350px] flex items-center justify-center text-ocean-600">
-              <p>No user growth data available</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Enhanced Users Table with pagination and search */}
+      {/* Secondary Metrics - 3 Column */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Referral Stats */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-cyan-600" />
+              <CardTitle className="text-sm font-medium text-slate-700">Referral Program</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Total Invited</span>
+              <span className="text-lg font-bold text-cyan-700">{formatNumber(stats.totalInvitedUsers)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Active Referrers</span>
+              <span className="text-lg font-bold text-teal-700">{formatNumber(stats.uniqueReferrers)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Conversion Rate</span>
+              <span className="text-lg font-bold text-cyan-800">{stats.inviteConversionRate.toFixed(1)}%</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Token Usage */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-teal-600" />
+              <CardTitle className="text-sm font-medium text-slate-700">Token Usage</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Input Tokens</span>
+              <span className="text-lg font-bold text-teal-700">{formatNumber(stats.totalInputTokens)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Output Tokens</span>
+              <span className="text-lg font-bold text-cyan-700">{formatNumber(stats.totalOutputTokens)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Total</span>
+              <span className="text-lg font-bold text-cyan-800">{formatNumber(stats.totalInputTokens + stats.totalOutputTokens)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quiz Breakdown */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-cyan-600" />
+              <CardTitle className="text-sm font-medium text-slate-700">Quiz Breakdown</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Paraphrase Score</span>
+              <span className="text-lg font-bold text-cyan-700">{stats.avgParaphraseScore}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Topic Score</span>
+              <span className="text-lg font-bold text-teal-700">{stats.avgTopicScore}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Overall Avg</span>
+              <span className="text-lg font-bold text-cyan-800">{stats.avgQuizScore}%</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Users Table */}
       <EnhancedUsersTable users={stats.allUsers} />
-    </>
+    </div>
   )
 }
